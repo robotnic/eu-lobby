@@ -1,0 +1,94 @@
+<div>
+<md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+
+<img ng-src="{{mep.Photo}}" style="float:left;margin:20px"/>
+<h2>{{mep.Name.full}}</h2>
+<p>{{mep.Birth.date|date:'dd. MMMM yyyy'}}, {{mep.Birth.place}}</p>
+<div class="sozialbuttons">
+<a ng-repeat="mail in mep.Mail" href="mailto:{{mail}}" title="{{mail}}"><img src="icons/email.jpg"/></a>
+<a ng-repeat="site in mep.Homepage" ng-href="{{site}}" title="{{site}}"><img src="icons/www.jpg"/></a>
+<a ng-repeat="site in mep.Facebook" ng-href="{{site}}" title="Facebook"><img src="icons/facebook.jpg"/></a>
+<a ng-repeat="site in mep.Twitter" ng-href="{{site}}" title="Twitter"><img src="icons/twitter.jpg"/></a>
+</div>
+
+<ul>
+<li ng-repeat="item in mep.Groups">
+<b>{{item.groupid}}</b> {{item.Organization}}
+</li>
+</ul>
+
+<div>{{mep.CV[0]}}</div>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+  <md-content>
+    <md-tabs md-dynamic-height md-border-bottom>
+      <md-tab label="{{topic}}" ng-repeat="topic in ['Committees','Delegations']">
+        <md-content class="md-padding">
+	<li ng-repeat="item in mep[topic]">
+		<b>{{item.abbr}}</b>
+		{{item.Organization}}
+	</li>
+	</md-content>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+
+<!--
+<div ng-repeat="topic in ['Committees','Delegations']">
+<h3>{{topic}}</h3>
+<hr/>
+<ul>
+<li ng-repeat="item in mep[topic]">
+{{item.Organization}}
+</li>
+</ul>
+</div>
+-->
+<br/>
+<br/>
+  <md-content>
+    <md-tabs md-dynamic-height md-border-bottom>
+      <md-tab label="{{key}}" ng-repeat="(key,value) in mep.activities">
+        <md-content class="md-padding">
+<!--
+		 <div ng-repeat="item in value['8']">
+		<p>
+		{{item.date | date:'dd. MMM yyyy'}}
+		<a href="{{item.titleUrl}}">
+		{{item.title}}
+		</a>
+
+
+		<span ng-repeat="format in item.formatList">
+		&#160;
+		<a  ng-href="{{format.url}}">
+		{{format.type}}
+		</a>
+		</span>
+		</p>
+		</div>
+-->
+<md-list  ng-cloak>
+  <md-list-item class="secondary-button-padding" ng-href="{{item.titleUrl}}" ng-repeat="item in value['8']">
+    <p>{{item.date | date:'dd. MMM yyyy'}} {{item.title}}</p>
+    <md-button ng-repeat="format in item.formatList" class="d-secondary" ng-href="{{format.url}}">{{format.type}}</md-button>
+  </md-list-item>
+</md-list>
+
+	</md-content>
+      </md-tab>
+    </md-tabs>
+  </md-content>
+</div>
+
+
+
+<!--
+<pre>
+{{mep.activities|json}}
+</pre>
+-->
+</div>

@@ -1,0 +1,41 @@
+<div>
+<h1>dossier</h1>
+
+Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.title}}</a>
+<h3>Committees</h3>
+<hr/>
+<ul>
+<li ng-repeat="item in dossier.committees" ng-style="!item.responsible && {'color':'gray'}">
+<b>{{item.committee}}</b>
+{{item.committee_full}}
+</li>
+</ul>
+
+<div ng-repeat="">
+</div>
+
+<h2>Changes</h2>
+<ul>
+<li ng-repeat="(key,value) in dossier.changes">
+{{key|date:'dd. MMM yyyy'}}
+</li>
+</ul>
+
+<h2>Activities</h2>
+<div ng-repeat="activity in dossier.activities">
+<h3>{{activity.type}}</h3>
+<a ng-repeat="doc in activity.docs" ng-href="{{doc.url}}">
+      <md-button md-no-ink class="md-primary">{{doc.title}}</md-button>
+</a>
+</div>
+
+<br/>
+<br/>
+<br/>
+<br/>
+
+<hr/>
+<pre>
+{{dossier.activities|json}}
+</pre>
+</div>

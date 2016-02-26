@@ -1,0 +1,57 @@
+<md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+    <div layout="row">
+
+      <md-input-container style="margin-right: 10px;">
+
+        <md-select ng-model="selectedCountry" placeholder="select country">
+          <md-option ng-repeat="(key,value) in countries" value="{{key}}">
+            {{key}}
+          </md-option>
+        </md-select>
+      </md-input-container>
+      <md-input-container style="margin-right: 10px;">
+        <md-select ng-model="selectedParty" placeholder="select party">
+          <md-option ng-repeat="(key,value) in parties" value="{{key}}">
+            {{key}}
+          </md-option>
+        </md-select>
+      </md-input-container>
+      <md-input-container style="margin-right: 10px;">
+	 <label>Search by name</label>
+        <input>
+      </md-input-container>
+      <md-input-container>
+	<md-button class="md-raised md-primary">search</md-button>
+      </md-input-container>
+</div>
+
+
+<md-container>
+<div layout="row" ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
+  <div flex="10"><img style="float:left;height:50px;margin:10px;" ng-src="{{mep.Photo}}" />
+</div>
+  <div flex>
+<h3>{{mep.Name.full}} 
+
+<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
+</h3>
+
+<p> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</p>
+	</div>
+  <div flex><img style="height:50px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
+</div>
+</div>
+</md-container>
+
+<!--
+<div ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
+<img style="float:left;height:50px;margin:10px;" ng-src="{{mep.Photo}}" />
+<h3>{{mep.Name.full}}
+<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
+</h3>
+<p> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</p>
+<br/>
+<img style="height:50px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
+</div>
+{{meps}}
+-->

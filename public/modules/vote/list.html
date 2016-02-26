@@ -1,0 +1,14 @@
+<md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+<md-content>
+<md-list  ng-cloak>
+  <md-subheader class="md-no-sticky">Votings</md-subheader>
+  <md-list-item ng-repeat="item in list.data" ui-sref="votesget({voteid:item.voteid})">
+        <div class="md-list-item-text">
+          <h3 style="argin-bottom:0">{{ item.title }}</h3>
+          <p style="margin-top:0">
+          <i>{{item.ts|date:"dd. MMM yyyy"}}</i> {{item.eptitle}}
+          </p>
+        </div>
+  </md-list-item>
+</md-list>
+</md-content>

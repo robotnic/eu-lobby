@@ -1,0 +1,22 @@
+<md-content>
+<md-list  ng-cloak>
+  <md-subheader class="md-no-sticky">Dossiers</md-subheader>
+  <md-list-item ng-repeat="item in dossiers.data" ui-sref="dossierget({dossierid:item.id})">
+        <div class="md-list-item-text">
+          <h3 style="argin-bottom:0">{{ item.procedure.title }}</h3>
+	  <p ng-repeat="subject in item.procedure.subject" style="margin-top:0">
+	  {{subject}}
+	  </p>
+	</div>
+  </md-list-item>
+</md-list>
+</md-content>
+<!--
+<div ng-repeat="item in dossiers.data">
+{{item.procedure.title}}
+<div ng-repeat="subject in item.procedure.subject">
+{{subject}}
+</div>
+-->
+
+</div>
