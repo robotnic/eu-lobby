@@ -11,7 +11,7 @@ ep_dossiers.json  ep_meps_current.json  ep_votes.json
 
 Import to mongo
 --------------
-
+```
 mongoimport --upsert --db feathers --collection messages --file ep_dossiers.json
 
 
@@ -24,6 +24,7 @@ db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 //integer to string for "UserID"
 db.meps.find().forEach(function(doc){doc.UserID=doc.UserID+"";db.meps.save(doc);});
 
+```
 
 
 
