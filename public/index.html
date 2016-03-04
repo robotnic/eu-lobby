@@ -5,14 +5,15 @@
     <title>EU API</title>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="/bower_components/angular-material/angular-material.css">
+    <link rel="stylesheet" href="bower_components/json-formatter/dist/json-formatter.css">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body ng-controller="api">
-
     <div style="min-height: 64px;" role="region">
         <!-- I are hack for fixed position md-toolbar -->
         <md-toolbar layout="row" layout-align="start center" class="md-toolbar-tools md-whiteframe-z2" style="position: fixed;">
+	    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" style="height:60px"/>
             <md-button ui-sref="votes" class="md-button">Votings </md-button>
             <md-button ui-sref="meps" class="md-button">Meps </md-button>
             <md-button ui-sref="dossiers" class="md-button"> Dossiers </md-button>
@@ -22,11 +23,15 @@
         <ui-view></ui-view>
     </md-content>
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
     <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
     <script src="bower_components/angular-aria/angular-aria.js"></script>
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <script src="bower_components/angular-material/angular-material.js"></script>
     <script src="bower_components/ng-country-select/dist/ng-country-select.js"></script>
+    <script src="bower_components/json-formatter/dist/json-formatter.js"></script>
+    <script src="modules/dossier/controller.js"></script>
+    <script src="modules/mep/controller.js"></script>
     <script src="script.js"></script>
 </body>
 

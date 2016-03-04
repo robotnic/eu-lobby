@@ -1,6 +1,6 @@
 {
-  "name": "chat2",
-  "description": "chattinger",
+  "name": "eu-lobby",
+  "description": "Watch MEPs at work",
   "version": "0.0.0",
   "homepage": "",
   "main": "lib/",
@@ -22,6 +22,7 @@
     "test": "npm run jshint && npm run mocha"
   },
   "dependencies": {
+    "JSONStream": "^1.0.7",
     "babel-core": "^6.5.2",
     "babel-preset-es2015": "^6.5.0",
     "body-parser": "^1.15.0",
@@ -36,6 +37,7 @@
     "feathers-rest": "^1.2.2",
     "feathers-socketio": "^1.3.3",
     "feathers-swagger": "^0.2.0",
+    "lzma-native": "^1.1.0",
     "mongoose": "^4.4.4",
     "serve-favicon": "^2.3.0",
     "winston": "^2.1.1"

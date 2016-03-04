@@ -28,7 +28,8 @@
 
 <md-container>
 <div layout="row" ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
-  <div flex="10"><img style="float:left;height:50px;margin:10px;" ng-src="{{mep.Photo}}" />
+  <div flex="10" ng-style="{'border-left':'6px solid '+parties[mep.Groups[0].groupid].color}">
+<img style="height:120px;margin:0px;transform:scale(0.5)" ng-src="{{mep.Photo}}" />
 </div>
   <div flex>
 <h3>{{mep.Name.full}} 

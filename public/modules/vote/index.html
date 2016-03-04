@@ -8,25 +8,22 @@
     </div>
 
     <div ng-repeat="type in ['For','Against','Abstain']">
-        <h1>{{type}} {{voteresult[type].total}}</h1>
-        <md-card ng-repeat="group in voteresult[type].groups">
+        <h1 ng-click="open=!open">{{type}} {{voteresult[type].total}}</h1>
+<md-tabs md-dynamic-height md-border-bottom >
+      <md-tab label="{{party.group}}" ng-repeat="party in voteresult[type].groups" md-on-select="selectParty(party)">
+
+      </md-tab>
+</md-tabs>
+        <md-card g-repeat="group in voteresult[type].groups">
 	  <md-content class="md-padding autocomplete" layout="column" ng-class="type">
 
                 <md-card-title>
-                    <md-card-title-text>
-                        <span class="md-headline">{{group.group}}</span>
-			<!--
-                        <span class="md-subhead">Large</span>
-			-->
+                    <md-card-title-text >
+                        <span class="md-headline">{{group.group}} {{group.votes.length}}</span>
                     </md-card-title-text>
                 </md-card-title>
+
                 <div class="md-media-lg card-media">
-                    <!--
-		<span ng-repeat="vote in group.votes" ui-sref="mepsget({'userid':vote.userid})" style="border:1px solid black;display:inline-block">
-			<img style="height:30px;width:20px;float:left" ng-src="http://www.europarl.europa.eu/mepphoto/{{vote.userid}}.jpg"/>
-			{{vote.name}}
-		</span>
--->
     <md-contact-chips
         ng-model="ctrl.contacts"
         md-contacts="ctrl.querySearch($query)"
@@ -39,8 +36,8 @@
         placeholder="To">
     </md-contact-chips>
                     <md-list class="fixedRows">
-                        <md-list-item class="md-2-line contact-item" ng-repeat="vote in group.votes" style="display:inline-block;in-width:160px" ui-sref="mepsget({'userid':vote.userid})">
-                            <img ng-src="http://www.europarl.europa.eu/mepphoto/{{vote.userid}}.jpg" class="md-avatar" alt="{{vote.userid}}"  />
+                        <md-list-item class="md-2-line contact-item" ng-repeat="vote in group.votes" style="display:inline-block;in-width:160px" ui-sref="mepsget({'userid':vote.ep_id})">
+                            <img ng-src="http://www.europarl.europa.eu/mepphoto/{{vote.ep_id}}.jpg" class="md-avatar" alt="{{vote.userid}}"  />
                             <div class="md-list-item-text compact">
                                 <h3>{{vote.name}}</h3>
                             </div>

@@ -1,7 +1,7 @@
 <div>
 <md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
 
-<img ng-src="{{mep.Photo}}" style="float:left;margin:20px"/>
+<img ng-src="{{mep.Photo}}" style="float:left;margin:2px;transform: scale(0.8);"/><!-- 170x215-->
 <h2>{{mep.Name.full}}</h2>
 <p>{{mep.Birth.date|date:'dd. MMMM yyyy'}}, {{mep.Birth.place}}</p>
 <div class="sozialbuttons">
@@ -86,9 +86,11 @@
 
 
 
-<!--
+<h1>votings</h1>
+<div ng-repeat="voting in votings.data">
+{{voting.ts|date :'dd. MMM yyyy'}} {{voting.title}}
+</div>
 <pre>
-{{mep.activities|json}}
 </pre>
--->
+
 </div>

@@ -28,7 +28,16 @@ Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.ti
       <md-button md-no-ink class="md-primary">{{doc.title}}</md-button>
 </a>
 </div>
+<h2>Votings</h2>
 
+<div ng-repeat="voting in votings.data" layout="row" tyle="width:600px">
+<span class="flex-10" style="color:green"> 👍{{voting.For.total}}</span>
+<span class="flex-10"  style="color:red">👎{{voting.Against.total}}</span>
+<span class="flex-70" ui-sref="votesget({voteid:voting.voteid})"  > {{voting.title}}</span>
+<span class="flex-10"  >
+{{voting.voteid}}
+
+</div>
 <br/>
 <br/>
 <br/>
@@ -36,6 +45,7 @@ Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.ti
 
 <hr/>
 <pre>
-{{dossier.activities|json}}
+
+<json-formatter json="votings" open="1"></json-formatter>
 </pre>
 </div>

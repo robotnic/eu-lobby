@@ -1,5 +1,6 @@
 var countries=[];
-angular.module("eu",['ui.router','ngMaterial','countrySelect'])
+angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','jsonFormatter'])
+
 .value('countries', {
 	"Germany":"de", 
 	"Belgium":"be", 
@@ -28,12 +29,13 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
 	"":""
 })
 .value('parties',{
-        "PPE":"https://upload.wikimedia.org/wikipedia/en/8/80/EPP_EP_group_logo_2015.png",
-        "Verts/ALE":"https://upload.wikimedia.org/wikipedia/fr/thumb/e/e9/Logo_Verts_ALE_en.png/300px-Logo_Verts_ALE_en.png",
-        "ALDE":"https://upload.wikimedia.org/wikipedia/de/2/2d/ALDE_logo.svg",
-        "S&D":"https://upload.wikimedia.org/wikipedia/commons/c/c4/Logo_S%26D_EN.png",
-        "ECR":"https://upload.wikimedia.org/wikipedia/en/e/e9/European_Conservatives_and_Reformists_logo.png",
-        "EFD":"",
+        "PPE":{logo:"https://upload.wikimedia.org/wikipedia/en/8/80/EPP_EP_group_logo_2015.png",color:"black"},
+        "Verts/ALE":{logo:"https://upload.wikimedia.org/wikipedia/fr/thumb/e/e9/Logo_Verts_ALE_en.png/300px-Logo_Verts_ALE_en.png",color:"green"},
+        "ALDE":{logo:"https://upload.wikimedia.org/wikipedia/de/2/2d/ALDE_logo.svg",color:"pink"},
+        "S&D":{logo:"https://upload.wikimedia.org/wikipedia/commons/c/c4/Logo_S%26D_EN.png",color:"red"},
+        "ECR":{logo:"https://upload.wikimedia.org/wikipedia/en/e/e9/European_Conservatives_and_Reformists_logo.png",color:"purple"},
+        "ENF":{logo:"",color:"blue"},
+        "EFD":{logo:"",color:"brown"},
 	"":""
 })
 .config(function($stateProvider, $urlRouterProvider) {
@@ -49,7 +51,8 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
             controller: function($scope,$http){
 		$scope.loading=true;
 		var sort=JSON.stringify({UserId:1});
-		$http.get("/api/votes?$skip=0&$limit=50&$sort[ts]=-1&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid",{cache:true}).then(function(response){
+		$http.get("/api/votes?$skip=0&$limit=20&$sort[ts]=-1&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid",{cache:true})
+		.then(function(response){
 			console.log(response);
 			$scope.list=response.data;
 			$scope.loading=false;
@@ -57,7 +60,6 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
 			console.log(error);
 			$scope.loading=false;
 		});
-
 	    }
 		
         })
@@ -67,6 +69,7 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
             controller: function($scope,$http,$stateParams){
 		console.log($stateParams);
 		$scope.loading=true;
+		$scope.selectedIndex=-1;
 		$http.get("/api/votes/"+$stateParams.voteid).then(function(response){
 			console.log(response);
 			$scope.voteresult=response.data;
@@ -75,6 +78,9 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
 			console.log(error);
 			$scope.loading=false;
 		});
+		$scope.selectParty=function(party){
+			$scope.group=party;
+		}
 	    }
 		
         })
@@ -129,6 +135,8 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
         .state('mepsget', {
 	    url:'/meps/:userid',
 	    templateUrl: 'modules/mep/index.html',
+            controller: 'mepcontroller',
+/*
             controller: function($scope,$rootScope,$http,$stateParams){
 		console.log("eh da");
 		$rootScope.loading=true;
@@ -142,6 +150,7 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
                 });
 
             }
+*/
         })
  
         .state('dossiers', {
@@ -162,6 +171,8 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
         .state('dossierget', {
 	    url:'/dossier/:dossierid',
 	    templateUrl: 'modules/dossier/index.html',
+            controller: 'dossiercontroler',
+/*
             controller: function($scope,$http,$stateParams){
 		console.log("eh da");
                 $http.get("/api/dossiers/"+$stateParams.dossierid).then(function(response){
@@ -172,6 +183,7 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
                 });
 
             }
+*/
         });
         
 })
@@ -182,35 +194,23 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect'])
 
 .filter("partylogo",function(parties){
 	return function(party){
-		return parties[party]
+		if(parties[party]){
+			return parties[party].logo
+		}
 	}
 })
+.filter("partycolor",function(parties){
+	return function(party){
+		console.log(party);
+		if(parties[party]){
+			return parties[party].color
+		}
+	}
+})
+
+
+
 .filter("flag",function($rootScope,countries){
-var countries_delete_this={
-"Germany":"de", 
-"Belgium":"be", 
-"Czech Republic":"cz", 
-"United Kingdom":"gb", 
-"Malta":"ma", 
-"France":"fr", 
-"Netherlands":"nl", 
-"Spain":"es", 
-"Poland":"pl", 
-"Portugal":"pt", 
-"Italy":"it", 
-"Ireland":"ir", 
-"Austria":"at", 
-"Sweden":"se", 
-"Hungary":"hu", 
-"Latvia":"lv", 
-"Finland":"fi", 
-"Bulgaria":"bu", 
-"Lithuania":"lt", 
-"Slovenia":"sl", 
-"Denmark":"dm", 
-"Greece":"gr", 
-"Slovakia":"sk"
-}
 	return function(country){
 		return "https://cdn.rawgit.com/lipis/flag-icon-css/master/flags/4x3/"+countries[country]+".svg"
 	}

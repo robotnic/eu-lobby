@@ -12,8 +12,24 @@ import socketio from 'feathers-socketio';
 import authentication from 'feathers-authentication';
 import middleware from './middleware';
 import services from './services';
+//const hook = require('feathers-hooks');
+
 
 let app = feathers();
+
+
+
+
+/*
+app.service('members').before({
+  find(hook) {
+    const epId = hook.params.groups.votes.ep_id;
+    if(epId) {
+      hook.params.groups.votes.ep_id = parseInt(epId, 10);
+    }
+  }
+});
+*/
 
 app.configure(configuration(join(__dirname, '..')))
   .use(compress())
