@@ -19,8 +19,8 @@ mongoimport --upsert --db eulobby --collection meps_current --file data/meps_cur
 mongoimport --upsert --db eulobby --collection votes --file data/votes.json 
 mongoimport --upsert --db eulobby --collection amendments --file data/amendments.json 
 ```
-(there may be some exeptions, but it should still import data)
-see: http://stackoverflow.com/questions/24537220/how-to-import-large-json-file-into-mongodb-using-mongoimport
+(there may be lots of exeptions, but it should still import data)
+
 
 //copy field "_id" to "id"
 ```
@@ -33,7 +33,5 @@ db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 ## Implementation
 
 * Angular Material
-* Backend featherjs
+* Backend [featherjs](http://feathersjs.com/)
 
-## patch
-https://raw.githubusercontent.com/dominictarr/JSONStream/master/index.js
