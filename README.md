@@ -32,6 +32,6 @@ db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
 ## Implementation
 
-* Angular Material
+* Frontend [Angular Material](https://material.angularjs.org/latest/)
 * Backend [featherjs](http://feathersjs.com/)
 
