@@ -87,7 +87,7 @@
 
 
 <h1>votings</h1>
-<div ng-repeat="voting in votings.data">
+<div ng-repeat="voting in votings |orderBy:'ts'" class="{{voting.vote}}">
 {{voting.ts|date :'dd. MMM yyyy'}} {{voting.title}}
 </div>
 <pre>

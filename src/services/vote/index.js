@@ -21,14 +21,19 @@ export default function(){
   let myHook = function(options) {
     return function(hook) {
       console.log('My custom hook ran!',hook.params.query['For.groups.votes.ep_id']);
+	//For
 	 var epId = hook.params.query['For.groups.votes.ep_id']
 	 if(epId) {
 	      hook.params.query['For.groups.votes.ep_id'] = parseInt(epId, 10);
          }
+
+	//Against
 	 var epId = hook.params.query['Against.groups.votes.ep_id']
 	 if(epId) {
 	      hook.params.query['Against.groups.votes.ep_id'] = parseInt(epId, 10);
          }
+
+	//Abstain
          var epId = hook.params.query['Abstain.groups.votes.ep_id']
          if(epId) {
               hook.params.query['Abstain.groups.votes.ep_id'] = parseInt(epId, 10);
@@ -39,14 +44,14 @@ export default function(){
   }
 
   // Get our initialize service to that we can bind hooks
-  const dossierService = app.service('/api/votes');
-  dossierService.before({
+  const voteService = app.service('/api/votes');
+  voteService.before({
     find: [ myHook() ]
   });
 
   // Set up our before hooks
-  dossierService.before(hooks.before);
+  voteService.before(hooks.before);
 
   // Set up our after hooks
-  dossierService.after(hooks.after);
+  voteService.after(hooks.after);
 }

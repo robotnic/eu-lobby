@@ -9,6 +9,8 @@ const Schema = mongoose.Schema;
 let mepsSchema = new Schema({
   createdAt: {type: Date, 'default': Date.now},
   updatedAt: {type: Date, 'default': Date.now}
+},{
+  collection : 'meps_current'
 });
 
 let mepsModel = mongoose.model('meps', mepsSchema);

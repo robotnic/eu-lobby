@@ -7,7 +7,7 @@ var decompressor = lzma.createDecompressor();
 * Download files from parltrack
 */
 
-var files=["ep_dossiers","ep_meps_current","ep_votes","ep_amendments"]
+var files=["dossiers","meps_current","votes","amendments"]
 
 
 //loading files in parallel didn't work for me if you wounder why it isn't just a loop. It's a workaround
@@ -16,7 +16,7 @@ for(var i=0;i<files.length;i++){
 }
 
 function load(filename){
-	var url="http://parltrack.euwiki.org/dumps/"+filename+".json.xz";
+	var url="http://parltrack.euwiki.org/dumps/ep_"+filename+".json.xz";
 	var filedirname="data/"+filename+".json";
 	//console.log("downloading "+url +" -> "+filedirname);
 	var file = fs.createWriteStream(filedirname);

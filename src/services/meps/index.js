@@ -17,8 +17,20 @@ export default function(){
   // Initialize our service with any options it requires
   app.use('/api/meps', service(options));
 
+
+  let mepsHook = function(options) {
+    return function(hook) {
+      console.log('My custom hook ran!',hook.id);
+	hook.id=parseInt(hook.id);
+    }
+  }
+
   // Get our initialize service to that we can bind hooks
   const userService = app.service('/api/meps');
+  userService.before({
+    get: [ mepsHook() ]
+  });
+
 
   // Set up our before hooks
   userService.before(hooks.before);
