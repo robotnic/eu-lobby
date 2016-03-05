@@ -6,6 +6,7 @@ UI for http://parltrack.euwiki.org/
 
 Copy data
 ---------
+This script copies data from parltrack and unpacks it to the data folder. After db import you can delete the files in "data" folder.
 ```
 node install.sh
 ```
