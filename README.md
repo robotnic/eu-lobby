@@ -4,6 +4,9 @@ UI for http://parltrack.euwiki.org/
 
 ## INSTALL
 
+git clone git@github.com:robotnic/eu-lobby.git
+
+
 Copy data
 ---------
 This script copies data from parltrack and unpacks it to the data folder. After db import you can delete the files in "data" folder.
@@ -14,7 +17,7 @@ node install.sh
 Import to mongo
 --------------
 ```
-mongoimport --upsert --db feathers --collection messages --file ep_dossiers.json
+mongoimport --upsert --db feathers --collection messages --file data/ep_dossiers.json
 mongoimport --upsert --db eulobby --collection dossiers --file data/dossiers.json 
 mongoimport --upsert --db eulobby --collection meps_current --file data/meps_current.json 
 mongoimport --upsert --db eulobby --collection votes --file data/votes.json 
@@ -28,7 +31,12 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
 ```
-
+Start
+--------
+```
+npm start
+```
+[open browser](http://localhost:3030);
 
 
 ## Implementation
