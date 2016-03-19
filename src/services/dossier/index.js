@@ -7,7 +7,7 @@ export default function(){
   const app = this;
 
   let options = {
-    id:"_id",
+    id:"id",
     Model: dossier,
     paginate: {
       default: 25,
@@ -20,20 +20,6 @@ export default function(){
 
   // Get our initialize service to that we can bind hooks
   const dossierService = app.service('/api/dossiers');
-
-  let dosHook = function(options) {
-    return function(hook) {
-      console.log('My custom hook ran!',hook.id);
-        hook.id=String(hook.id);
-	console.log(hook.id);
-    }
-  }
-
-  // Get our initialize service to that we can bind hooks
-  dossierService.before({
-    get: [ dosHook() ]
-  });
-
 
   // Set up our before hooks
   dossierService.before(hooks.before);

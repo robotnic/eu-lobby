@@ -1,5 +1,6 @@
+var MEPS;
 var countries=[];
-angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','jsonFormatter'])
+angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','vote','jsonFormatter','infinite-scroll'])
 
 .value('countries', {
 	"Germany":"de", 
@@ -48,10 +49,12 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
         .state('votes', {
             url: '/votes',
             templateUrl: 'modules/vote/list.html',
+	    controller:'votescontroller'
+/*
             controller: function($scope,$http){
 		$scope.loading=true;
 		var sort=JSON.stringify({UserId:1});
-		$http.get("/api/votes?$skip=0&$limit=20&$sort[ts]=-1&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid",{cache:true})
+		$http.get("/api/votes?$skip=0&$limit=150&$sort[ts]=-1&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid",{cache:true})
 		.then(function(response){
 			console.log(response);
 			$scope.list=response.data;
@@ -60,7 +63,9 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
 			console.log(error);
 			$scope.loading=false;
 		});
+
 	    }
+*/
 		
         })
          .state('votesget', {
@@ -89,6 +94,11 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
 	    url:'/meps',
 	    templateUrl: 'modules/mep/list.html',
 	    controller: function($scope,$rootScope,$http,$stateParams,countries,parties){
+		console.log("--------------------------meps list---------------");
+		var view={
+			skip:0,
+			limit:50
+		}
 		$scope.countries=countries;
 		$scope.parties=parties;
 		$scope.selectedCountry=localStorage.getItem("country") || "";
@@ -101,6 +111,7 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
 			}else{
 				countrySelector="";
 			}
+			skip=0;
 			load();
 		});
 
@@ -112,18 +123,35 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
 			}else{
 				partySelector="";
 			}
+			skip=0;
 			load();
 		});
 
-
+		
 
 		console.log("meeeeps",countries);
-
-		function load(){
+		$scope.loadMore=function(){
+			console.log("give me more data",view.skip,$scope.meps.total);
+			view.skip=view.skip+view.limit;
+			var limit=view.limit;
+			if($scope.meps.total + view.skip > view.limit){
+				limit=$scope.meps.total - view.skip
+			}
+			if(limit >0){			
+				load(true);
+			}
+	
+		};
+		load();
+		function load(keep){
 			$scope.loading=true;
-			$http.get("/api/meps?$skip=0&$limit=20&$sort[Birth.date]=-1&$select[]=Birth&$select[]=Photo&$select[]=Name&$select[]=Groups&$select[]=UserID&$select[]=active"+countrySelector+partySelector).then(function(response){
-				console.log(response);
-				$scope.meps=response.data;
+			var url="/api/meps?$skip="+view.skip+"&$limit="+view.limit+"&$sort[Birth.date]=-1&$select[]=Birth&$select[]=Photo&$select[]=Name&$select[]=Groups&$select[]=UserID&$select[]=active"+countrySelector+partySelector;
+			$http.get(url).then(function(response){
+				if(keep){
+					$scope.meps.data=$scope.meps.data.concat(response.data.data);
+				}else{
+					$scope.meps=response.data;
+				}
 				$scope.loading=false;
 			},function(error){
 				console.log(error);

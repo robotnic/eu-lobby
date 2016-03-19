@@ -1,7 +1,56 @@
-<md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+<div style="position:relative">
+<md-progress-linear style="position:absolute" ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+</div>
 <md-content>
+<input ng-model="searchstring"/><md-button ng-click="search()">seach</md-button>
 <md-list  ng-cloak>
   <md-subheader class="md-no-sticky">Votings</md-subheader>
+  <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>
+
+<div ng-repeat="report in reports">
+<md-card>
+     <md-card-title>
+          <md-card-title-text>
+            <span class="md-headline">{{report.items[0].ts|date:"dd. MMM yyyy"}}<b> {{report.items[0].eptitle}}</b></span>
+            <span class="md-subhead">{{report.title}}</span>
+		<md-button ui-sref="dossierget({dossierid:report.items[0].dossierid})">dossier</md-button>
+          </md-card-title-text>
+          <md-card-title-media>
+            <div class="md-media-lg card-media">
+	<img ng-repeat="rapporteur in report.items[0].rapporteur" ui-sref="mepsget({'userid':rapporteur.ref})"
+ng-src="http://www.europarl.europa.eu/mepphoto/{{rapporteur.ref}}.jpg" style="height:140px;width:120px;"/>
+		</div>
+          </md-card-title-media>
+        </md-card-title>
+        <md-card-content>
+
+
+	<div ayout="row" tyle="max-width:1000px">
+	
+	<div lex="33" ng-style="item.passed==true ? {'background-color':'rgba(0,255,0,0.1)'}:{'background-color':'rgba(255,0,0,0.1)'}" style="min-width:300px;border:0px solid black;margin:15px;display:inline-block"  ng-repeat="item in report.items| orderBy:'ts':false" ui-sref="votesget({voteid:item.voteid})" title="{{item.ts|date:'HH:mm:ss'}}">
+	<div style="position:relative">
+		<div style="position:absolute;right:5px;top:11px">
+			<span style="color:green">{{item.For.total}}</span>
+			<span style="color:red">{{item.Against.total}}</span>
+			<span style="color:grey">{{item.Abstain.total}}</span>
+		</div>
+		<div >
+		<div class="resultbar For" style="left:0;width:{{item.For.percent }}%;"></div>
+		<div class="resultbar Against" style="left:{{item.For.percent}}%;width:{{item.Against.percent}}%;"></div>
+		<div class="resultbar Abstain" style="left:{{0+item.For.percent + item.Against.percent}}%;width:{{item.Abstain.percent}}%;"></div>
+		</div>
+<div class="title">{{item.subtitle}}</div>
+	</div>
+	</div>
+	<br/>
+	<br/>
+        </md-card-content>
+</md-card>
+<br/>
+<br/>
+</div>
+</div>
+<!--
   <md-list-item ng-repeat="item in list.data" ui-sref="votesget({voteid:item.voteid})">
         <div class="md-list-item-text">
           <h3 style="argin-bottom:0">{{ item.title }}</h3>
@@ -11,4 +60,6 @@
         </div>
   </md-list-item>
 </md-list>
+-->
 </md-content>
+
