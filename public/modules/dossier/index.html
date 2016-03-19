@@ -1,5 +1,5 @@
 <div>
-<h1>dossier</h1>
+<h1>{{dossier.procedure.title}}</h1>
 
 Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.title}}</a>
 <h3>Committees</h3>
@@ -8,6 +8,8 @@ Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.ti
 <li ng-repeat="item in dossier.committees" ng-style="!item.responsible && {'color':'gray'}">
 <b>{{item.committee}}</b>
 {{item.committee_full}}
+(<span ng-repeat="rapporteur in item.rapporteur">{{rapporteur.name}}, </span>
+<span ng-repeat="shadow in item.shadow">{{shadow.name}} </span>)
 </li>
 </ul>
 

@@ -6,7 +6,7 @@ UI for http://parltrack.euwiki.org/
 
 Copy data
 ---------
-This script copies data from parltrack and unpacks it to the data folder. After db import you can delete the files in "data" folder.
+This script copies data from parltrack and unpacks it to the "data" folder. After db import you can delete the files in "data" folder.
 ```
 node install.sh
 ```
@@ -28,7 +28,7 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
 ```
-
+db.votes.createIndex({"ts":1})
 
 
 ## Implementation

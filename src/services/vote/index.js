@@ -11,7 +11,7 @@ export default function(){
     Model: vote,
     paginate: {
       default: 50,
-      max:100 
+      max:100000 
     }
   };
 
@@ -39,6 +39,16 @@ export default function(){
               hook.params.query['Abstain.groups.votes.ep_id'] = parseInt(epId, 10);
          }
 
+	//search
+	 if (hook.params.query.$search) {
+	    var search = hook.params.query.$search;
+	    var regEx = new RegExp('.*' + search + '.*', 'i');
+	    delete hook.params.query.$search;
+	    hook.params.query.$or = [
+	      { title: regEx },
+	      { eptitle: regEx },
+	    ];
+	  }
 
     }
   }

@@ -5,6 +5,23 @@ background-color:rgba(0,255,0,0.1);
 .Against{
 background-color:rgba(255,0,0,0.1);
 }
+.Abstain{
+background-color:rgba(0,0,0,0.1);
+}
+
+
+.resultbar{
+position:absolute;
+height:38px;
+}
+.title{
+padding:10px;
+text-overflow:    ellipsis;
+width:180px;
+white-space:nowrap;           /* force single line */
+overflow:hidden;
+
+}
 
 .sozialbuttons img{
 width:20px;
