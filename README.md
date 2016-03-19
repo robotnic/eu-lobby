@@ -17,7 +17,6 @@ node install.sh
 Import to mongo
 --------------
 ```
-mongoimport --upsert --db feathers --collection messages --file data/ep_dossiers.json
 mongoimport --upsert --db eulobby --collection dossiers --file data/dossiers.json 
 mongoimport --upsert --db eulobby --collection meps_current --file data/meps_current.json 
 mongoimport --upsert --db eulobby --collection votes --file data/votes.json 
@@ -40,7 +39,7 @@ Start
 ```
 npm start
 ```
-[open browser](http://localhost:3030);
+[open in browser](http://localhost:3030)
 
 
 
