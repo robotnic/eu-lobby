@@ -39,7 +39,7 @@ Start
 ```
 npm start
 ```
-[open in browser](http://localhost:3030)
+open in browser [http://localhost:3030](http://localhost:3030)
 
 
 
