@@ -3,9 +3,9 @@
 UI for http://parltrack.euwiki.org/
 
 ## INSTALL
-
+```
 git clone git@github.com:robotnic/eu-lobby.git
-
+```
 
 Copy data
 ---------
@@ -31,7 +31,10 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
 ```
-
+create index
+```
+db.votes.createIndex({"ts":1})
+```
 Start
 --------
 ```
@@ -39,7 +42,7 @@ npm start
 ```
 [open browser](http://localhost:3030);
 
-db.votes.createIndex({"ts":1})
+
 
 
 
