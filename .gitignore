@@ -1,2 +1,4 @@
 data/*
 !data/readme.txt
+node_modules
+public/bower_components

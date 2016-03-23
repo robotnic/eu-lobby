@@ -23,6 +23,13 @@
 <br/>
 <br/>
 <br/>
+<md-card>
+<cal mep="mep" onselect="select(day)"></cal>
+</md-card>
+
+
+<br/>
+<br/>
   <md-content>
     <md-tabs md-dynamic-height md-border-bottom>
       <md-tab label="{{topic}}" ng-repeat="topic in ['Committees','Delegations']">
@@ -49,28 +56,11 @@
 -->
 <br/>
 <br/>
+<!--
   <md-content>
     <md-tabs md-dynamic-height md-border-bottom>
       <md-tab label="{{key}}" ng-repeat="(key,value) in mep.activities">
         <md-content class="md-padding">
-<!--
-		 <div ng-repeat="item in value['8']">
-		<p>
-		{{item.date | date:'dd. MMM yyyy'}}
-		<a href="{{item.titleUrl}}">
-		{{item.title}}
-		</a>
-
-
-		<span ng-repeat="format in item.formatList">
-		&#160;
-		<a  ng-href="{{format.url}}">
-		{{format.type}}
-		</a>
-		</span>
-		</p>
-		</div>
--->
 <md-list  ng-cloak>
   <md-list-item class="secondary-button-padding" ng-href="{{item.titleUrl}}" ng-repeat="item in value['8']">
     <p>{{item.date | date:'dd. MMM yyyy'}} {{item.title}}</p>
@@ -82,15 +72,17 @@
       </md-tab>
     </md-tabs>
   </md-content>
+-->
 </div>
 
 
 
 <h1>votings</h1>
+<!--
 <div ng-repeat="voting in votings |orderBy:'ts'" class="{{voting.vote}}">
 {{voting.ts|date :'dd. MMM yyyy'}} {{voting.title}}
 </div>
 <pre>
 </pre>
-
+-->
 </div>

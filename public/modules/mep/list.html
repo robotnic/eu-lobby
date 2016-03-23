@@ -25,7 +25,28 @@
       </md-input-container>
 </div>
 
+<md-container>
+      <md-list flex infinite-scroll='loadMore()' infinite-scroll-distance='2'>
+        <md-subheader class="md-no-sticky">3 line item</md-subheader>
+        <md-list-item class="md-3-line"  ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
+		<img class="md-avatar" alt="{{mep.Name.full}}" ng-src="{{mep.Photo}}" />
+		<div class="md-list-item-text" layout="column">
 
+	<h3>{{mep.Name.full}} 
+	<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
+	</h3>
+
+	<h4> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</h4>
+	  <div flex><img style="height:20px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
+	</div>
+	</div>
+	</md-list-item>
+      </md-list>
+
+</md-container>
+
+
+<!--
 <md-container>
   <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>
 	<div layout="row" ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
@@ -45,7 +66,7 @@
 	</div>
 </div>
 </md-container>
-
+-->
 <!--
 <div ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
 <img style="float:left;height:50px;margin:10px;" ng-src="{{mep.Photo}}" />

@@ -1,14 +1,18 @@
 <md-content>
 <md-list  ng-cloak>
   <md-subheader class="md-no-sticky">Dossiers</md-subheader>
+  <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>
+
   <md-list-item ng-repeat="item in dossiers.data track by $index" ui-sref="dossierget({dossierid:item._id})">
         <div class="md-list-item-text">
           <h3 style="argin-bottom:0">{{ item.procedure.title }}</h3>
+	<span ng-repeat="committee in item.committees" ng-if="committee.rapporteur">{{committee.rapporteur[0].name}}, </span>
 	  <p ng-repeat="subject in item.procedure.subject" style="margin-top:0">
 	  {{subject}}
 	  </p>
 	</div>
   </md-list-item>
+  </div>
 </md-list>
 </md-content>
 <!--
