@@ -1,6 +1,8 @@
 <div>
 <md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
 
+<object type="image/svg+xml" data="icons/ep.svg" 
+	width="364" height="264" border="0"></object>
     <div ui-sref="dossierget({dossierid:voteresult.dossierid})">
         <h1>{{voteresult.title}}</h1>
         <p>{{voteresult.eptitle}}</p>
@@ -37,7 +39,11 @@
     </md-contact-chips>
                     <md-list class="fixedRows">
                         <md-list-item class="md-2-line contact-item" ng-repeat="vote in group.votes" style="display:inline-block;in-width:160px" ui-sref="mepsget({'userid':vote.ep_id})">
+<!--
                             <img ng-src="http://www.europarl.europa.eu/mepphoto/{{vote.ep_id}}.jpg" class="md-avatar" alt="{{vote.userid}}"  />
+-->
+                    <div class="icon-{{::vote.ep_id}}" title="{{::mep.Name.full}}"></div>
+
                             <div class="md-list-item-text compact">
                                 <h3>{{vote.name}}</h3>
                             </div>

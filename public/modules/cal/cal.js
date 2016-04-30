@@ -4,23 +4,23 @@ angular.module("cal",["angularMoment"])
     template: `
 
 <div style="position:relative;padding:20px">
-<span style="position:absolute;left:950px;top:-20px">
-<a  ng-click="year=year-1" style="cursor:pointer">&lt; </a>
+<span  class="dateswitch">
+<a  ng-click="year=year-1" style="cursor:pointer">&#160; &lt; &#160;</a>
 <span>{{year}}</span>
-<a ng-click="year=year+1" style="cursor:pointer"> &gt;</a>
+<a ng-click="year=year+1" style="cursor:pointer">&#160; &gt; &#160;</a>
 </span>
 <div ng-repeat="month in cal.months" style="position:relative;padding:3px" ng-init="monthIndex=$index">
-<span class="md-body-2">{{month.name}}</span>
-<div ng-repeat="day in month.days track by $index" class="day {{day.activities[0].group}}" style="left:{{100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{day.title}}" ng-click="select(day)">{{$index +1}}
+<span class="md-body-2">{{::month.name}}</span>
+<div ng-repeat="day in month.days track by $index" class="day {{::day.activities[0].group}}" style="left:{{::100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{::day.title}}" ng-click="select(day)">{{::$index +1}}
 </div>
 
 </div>
 </div>
 </div>
 <md-list>
-<md-list-item  ng-if="selectedday.activities" ng-repeat="theactivity in selectedday.activities"><p><span class="{{theactivity.group}} md-clickable">{{theactivity.group}}</span> <a ng-href="{{theactivity.titleUrl}}" target="_blank"> {{theactivity.title}}</a></p>
+<md-list-item  ng-if="selectedday.activities" ng-repeat="theactivity in selectedday.activities"><p><span class="{{::theactivity.group}} md-clickable">{{::theactivity.group}}</span> <a ng-href="{{::theactivity.titleUrl}}" target="_blank"> {{::theactivity.title}}</a></p>
 
-<a ng-href="{{format.url}}" target="_blank" ng-repeat="format in theactivity.formatList" class="icon {{format.type}}">
+<a ng-href="{{::format.url}}" target="_blank" ng-repeat="format in theactivity.formatList" class="icon {{::format.type}}">
 
 </a>
 </md-list-item>

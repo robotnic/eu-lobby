@@ -1,3 +1,13 @@
+.dateswitch{
+font-family: Roboto, "Helvetica Neue", sans-serif;
+font-weight:500;
+position:absolute;left:950px;top:-35px;font-size: 14px;
+color:rgba(0,0,0,0.54);
+}
+
+.dateswitch a:hover{
+color:red;
+}
 
 .icon{
 width:28px;
@@ -64,4 +74,6 @@ background-color:orange;
 .WDECL{
 background-color:brown;
 }
+
+
 

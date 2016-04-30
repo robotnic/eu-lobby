@@ -1,81 +1,50 @@
-<md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
-    <div layout="row">
+<div style="position:fixed;bottom:0px;left:0px;width:100%;z-index:1000">
+    <md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
+</div>
+<div layout="row">
 
-      <md-input-container style="margin-right: 10px;">
+    <md-input-container style="margin-right: 10px;">
 
         <md-select ng-model="selectedCountry" placeholder="select country">
-          <md-option ng-repeat="(key,value) in countries" value="{{key}}">
-            {{key}}
-          </md-option>
+            <md-option ng-repeat="(key,value) in countries" value="{{key}}">
+                {{key}}
+            </md-option>
         </md-select>
-      </md-input-container>
-      <md-input-container style="margin-right: 10px;">
+    </md-input-container>
+    <md-input-container style="margin-right: 10px;">
         <md-select ng-model="selectedParty" placeholder="select party">
-          <md-option ng-repeat="(key,value) in parties" value="{{key}}">
-            {{key}}
-          </md-option>
+            <md-option ng-repeat="(key,value) in parties " value="{{key}}">
+                {{key}}
+            </md-option>
         </md-select>
-      </md-input-container>
-      <md-input-container style="margin-right: 10px;">
-	 <label>Search by name</label>
+    </md-input-container>
+    <md-input-container style="margin-right: 10px;">
+        <label>Search by name</label>
         <input>
-      </md-input-container>
-      <md-input-container>
-	<md-button class="md-raised md-primary">search</md-button>
-      </md-input-container>
+    </md-input-container>
+    <md-input-container>
+        <md-button class="md-raised md-link" ng-click="selectedCountry=undefined;selectedParty=undefined">all</md-button>
+    </md-input-container>
 </div>
 
 <md-container>
-      <md-list flex infinite-scroll='loadMore()' infinite-scroll-distance='2'>
-        <md-subheader class="md-no-sticky">3 line item</md-subheader>
-        <md-list-item class="md-3-line"  ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
-		<img class="md-avatar" alt="{{mep.Name.full}}" ng-src="{{mep.Photo}}" />
-		<div class="md-list-item-text" layout="column">
+    <div style="width:100%" layout="row" layout-wrap flex infinite-scroll='loadMore()' infinite-scroll-distance='0'>
+        <md-card ng-repeat="mep in meps.data " ui-sref="mepsget.category({userid:mep.UserID,category:'Personal'})" style="min-width:400px;padding:10px">
+            <div layout="row" layout-wrap>
+                <div flex="10">
+                    <div class="icon-{{::mep.UserID}}" title="{{::mep.Name.full}}"></div>
+                    <img ng-if="refresh" class="md-avatar" alt="{{::mep.Name.full}}" ng-src="/proxy/{{::mep.UserID}}" />
+                </div>
+                <div flex>
+                    <h3 style="margin-top:0px">{{::mep.Name.full}}</h3>
+                    <p> {{::mep.Birth.date | date:'dd. MMM yyyy'}}, {{::mep.Birth.place}}</p>
+                </div>
+                <div flex="10">
+                    <img ng-if="::mep.Groups[0].country" ng-src="{{::mep.Groups[0].country|flag}}" style="width:20px" title="{{::mep.Groups[0].country}}" />
+                </div>
 
-	<h3>{{mep.Name.full}} 
-	<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
-	</h3>
 
-	<h4> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</h4>
-	  <div flex><img style="height:20px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
-	</div>
-	</div>
-	</md-list-item>
-      </md-list>
-
+            </div>
+        </md-card>
+    </div>
 </md-container>
-
-
-<!--
-<md-container>
-  <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>
-	<div layout="row" ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
-	  <div flex="10" ng-style="{'border-left':'6px solid '+parties[mep.Groups[0].groupid].color}">
-	<img style="height:120px;margin:0px;transform:scale(0.5)" ng-src="{{mep.Photo}}" />
-	</div>
-	  <div flex>
-	<h3>{{mep.Name.full}} 
-
-	<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
-	</h3>
-
-	<p> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</p>
-		</div>
-	  <div flex><img style="height:50px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
-	</div>
-	</div>
-</div>
-</md-container>
--->
-<!--
-<div ng-repeat="mep in meps.data" ui-sref="mepsget({userid:mep.UserID})">
-<img style="float:left;height:50px;margin:10px;" ng-src="{{mep.Photo}}" />
-<h3>{{mep.Name.full}}
-<img src="{{mep.Groups[0].country|flag}}" style="height:20px" title="{{mep.Groups[0].country}}"/>
-</h3>
-<p> {{mep.Birth.date | date:'dd. MMM yyyy'}}, {{mep.Birth.place}}</p>
-<br/>
-<img style="height:50px" ng-src="{{mep.Groups[0].groupid|partylogo}}" title="{{mep.Groups[0].groupid}}"/>
-</div>
-{{meps}}
--->
