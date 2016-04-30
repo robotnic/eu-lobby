@@ -27,11 +27,11 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 
 //copy field "_id" to "id"
 ```
+mongo
+use eulobby
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
 ```
-mongo
-use eulobby
 create index to speed up queries
 ```
 db.votes.createIndex({"ts":1})
