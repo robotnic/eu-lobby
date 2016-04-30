@@ -27,7 +27,7 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 
 //copy field "_id" to "id"
 ```
-mongo
+> mongo
 use eulobby
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 
