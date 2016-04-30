@@ -2,7 +2,7 @@
 <md-progress-linear style="position:absolute" ng-if="loading" md-mode="indeterminate"></md-progress-linear>
 </div>
 <md-content>
-<input ng-model="searchstring"/><md-button ng-click="search()">seach</md-button>
+<input ng-model="searchstring" ng-keypress="($event.which === 13)?search():0"/><md-button ng-click="search()">seach</md-button>
 <md-list  ng-cloak>
   <md-subheader class="md-no-sticky">Votings</md-subheader>
   <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>

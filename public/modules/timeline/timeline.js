@@ -25,7 +25,7 @@ angular.module("timeline",["angularMoment"])
 	<text x="30" y="00" transform="translate(0) rotate(-45 50 50)" font-size="10">{{::line.start|date}}</text>
 	</g>
 </g>
-<text ng-if="!line.hit" style="font-size:10px" x="{{::line.coords[0][0] +3}}" y="{{::line.coords[0][1] -3}} ">{{::line.abbr}}</text>
+<text ng-if="!line.hit" style="font-size:10px" x="{{::line.coords[0][0] +3}}" y="{{::line.coords[0][1] -3}} ">{{::line.abbr}}<tspan fill="gray"> {{::line.role}}</tspan></text>
 </g>
 </g>
 
@@ -40,7 +40,7 @@ angular.module("timeline",["angularMoment"])
 })
 .controller("timelineController",function($scope){
 	var totalwidth=1000;
-	var types=["Constituencies","Committees","Delegations"];
+	var types=["Constituencies","Groups","Committees","Delegations"];
 	$scope.pixellines=[];
 	var delta=0;
 	$scope.$watch("mep.UserID",function(){
@@ -49,6 +49,7 @@ angular.module("timeline",["angularMoment"])
 			var minmax=getMinMax($scope.mep.Constituencies);
 			console.log(minmax);
 			makeRaster(minmax);
+			var lastType="";
 			for(var t=0;t< types.length;t++){
 				console.log(t,types[t]);
 				makeInfo(minmax,$scope.mep[types[t]]);
@@ -78,6 +79,7 @@ angular.module("timeline",["angularMoment"])
 			var hit=false;
 			var drawdate=false;
 			var abbr=item.abbr;
+			var role=item.role;
 			if(!abbr){
 				abbr=item.party;
 				color="black";	
@@ -98,6 +100,9 @@ angular.module("timeline",["angularMoment"])
 			if(item.role=='Member'){
 				color='green'
 			}
+			if(item.groupid){
+				color='blue'
+			}
 			abbrCache[abbr]=y;
 			if($scope.height < y)$scope.height=y;
 			var realX2=x2;
@@ -107,6 +112,7 @@ angular.module("timeline",["angularMoment"])
 			var pixelline={
 				coords:[[x1, y+40],[realX2, y+40]],
 				abbr:abbr,
+				role:role,
 				color:color,
 				hit:hit,
 				drawdate:drawdate,

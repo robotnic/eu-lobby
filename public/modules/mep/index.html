@@ -23,10 +23,12 @@
 <p>{{::mep.Birth.date|date:'dd. MMMM yyyy'}}, {{::mep.Birth.place}}</p>
 
 <div class="sozialbuttons">
-<a ng-repeat="mail in mep.Mail" href="mailto:{{::mail}}" title="{{::mail}}"><img src="icons/email.jpg"/></a>
-<a ng-repeat="site in mep.Homepage" ng-href="{{::site}}" title="{{::site}}"><img src="icons/www.jpg"/></a>
-<a ng-repeat="site in mep.Facebook" ng-href="{{::site}}" title="Facebook"><img src="icons/facebook.jpg"/></a>
-<a ng-repeat="site in mep.Twitter" ng-href="{{::site}}" title="Twitter"><img src="icons/twitter.jpg"/></a>
+<table>
+<tr ng-repeat="mail in mep.Mail"><td><a  href="mailto:{{::mail}}" title="{{::mail}}"><img src="icons/email.jpg"/></a></td><td>{{::mail}}</td></tr>
+<tr ng-repeat="site in mep.Homepage"><td><a ng-href="{{::site}}" title="{{::site}}"><img src="icons/www.jpg"/></a></td><td>{{::site}}</td></tr>
+<tr ng-repeat="site in mep.Facebook"><td><a ng-href="{{::site}}" title="Facebook"><img src="icons/facebook.jpg"/></a></td><td>{{::site}}</td></tr>
+<tr ng-repeat="site in mep.Twitter"><td><a ng-href="{{::site}}" title="Twitter"><img src="icons/twitter.jpg"/></a></td><td>{{::site}}</td></tr>
+</table>
 </div>
 
 <ul>
@@ -36,12 +38,17 @@
 </ul>
 <div ng-repeat="(name,address) in mep.Addresses">
 	<h5>{{name}}</h5>
-	<p ng-if="address.Phone">Phone: {{address.Phone}}</p>
-	<p ng-if="address.Fax">Fax: {{address.Fax}}</p>
-	<div ng-repeat="(key,value) in address.Address">
-		<span style="color:grey">{{key}} </span> {{value}}
-	</div>
-	<div ng-if="name=='Postal'" ng-repeat="addressLine in mep.Addresses['Postal']"]>{{addressLine}}</div>
+	<table class="mep">
+	<tr ng-if="address.Phone"><td>Phone</td><td>{{address.Phone}}</td></tr>
+	<tr ng-if="address.Fax"><td>Fax</td><td>{{address.Fax}}</td></tr>
+
+	<tr ng-repeat="(key,value) in address.Address">
+		<td style="color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px">{{key}} </td><td> {{value}}</td>
+	</tr>
+	</table>
+<!--
+	<div ng-if="name=='Postal2'" ng-repeat="addressLine in mep.Addresses['Postal']"]>{{addressLine}}</div>
+-->
 </div>
 
 <div>{{::mep.CV[0]}}</div>
@@ -50,25 +57,6 @@
 
 <timeline ng-if="category=='Timeline'" mep="mep" onselect="select(day)"></timeline>
 <cal ng-if="category=='Calendar'" mep="mep" onselect="select(day)"></cal>
-<!--
-<br/>
-<br/>
-  <md-content>
-    <md-tabs md-dynamic-height md-border-bottom>
-      <md-tab label="{{::topic}}" ng-repeat="topic in ['Committees','Delegations']">
-        <md-content class="md-padding">
-	<li ng-repeat="item in mep[topic]">
-		<b>{{::item.abbr}}</b>
-		{{::item.Organization}}
-	</li>
-	</md-content>
-      </md-tab>
-    </md-tabs>
-  </md-content>
-
-<br/>
-<br/>
--->
 </div>
 
 

@@ -1,0 +1,7 @@
+.mep{
+border:0px solid red;
+border-spacing:0px
+}
+.mep td:first-child{
+color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px;
+}
