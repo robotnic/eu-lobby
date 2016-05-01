@@ -132,19 +132,20 @@ md-toolbar {
   height: 250px;
   overflow: hidden;
 }
-.mep {
-  border: 0px solid red;
-  border-spacing: 0px;
+.dateswitch {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-weight: 500;
+  position: absolute;
+  left: 950px;
+  top: -35px;
+  font-size: 14px;
+  color: rgba(0,0,0,0.54);
 }
 
-.mep td:first-child {
-  color: grey;
-  text-align: right;
-  border-right: 1px solid #c0c0c0;
-  font-weight: 500;
-  opacity: 0.5;
-  padding: 4px;
+.dateswitch a:hover {
+  color: red;
 }
+
 .icon {
   width: 28px;
   height: 28px;
@@ -153,11 +154,11 @@ md-toolbar {
 }
 
 .icon.pdf {
-  background-image: url("../modules/timeline/icons/pdf.png");
+  background-image: url("../modules/cal/icons/pdf.png");
 }
 
 .icon.doc {
-  background-image: url("../modules/timeline/icons/doc.png");
+  background-image: url("../modules/cal/icons/doc.png");
 }
 
 .day {
@@ -218,20 +219,35 @@ md-toolbar {
 .WDECL {
   background-color: brown;
 }
-.dateswitch {
-  font-family: Roboto, "Helvetica Neue", sans-serif;
+.mep {
+  border: 0px solid red;
+  border-spacing: 0px;
+}
+
+.mep .meptabs td {
+  vertical-align: top;
+  padding-bottom: 10px;
+  padding: 4px;
+}
+
+.mep .meptabs td:first-child {
+  border-right: 1px solid #c0c0c0;
+  color: grey;
+  text-align: right;
   font-weight: 500;
-  position: absolute;
-  left: 950px;
-  top: -35px;
-  font-size: 14px;
-  color: rgba(0,0,0,0.54);
+  opacity: 0.5;
+  padding: 4px;
 }
 
-.dateswitch a:hover {
-  color: red;
+.mep .namephoto {
+  height: 40px;
+  margin-left: 5px;
 }
 
+.timeline {
+  width: 500px;
+  overflow: auto;
+}
 .icon {
   width: 28px;
   height: 28px;
@@ -240,11 +256,11 @@ md-toolbar {
 }
 
 .icon.pdf {
-  background-image: url("../modules/cal/icons/pdf.png");
+  background-image: url("../modules/timeline/icons/pdf.png");
 }
 
 .icon.doc {
-  background-image: url("../modules/cal/icons/doc.png");
+  background-image: url("../modules/timeline/icons/doc.png");
 }
 
 .day {

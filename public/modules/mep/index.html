@@ -1,9 +1,9 @@
-<div>
+<div class="mep">
 <!--
 <md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
 -->
 <h2>
-<img ng-src="{{::mep.Photo}}" style="loat:left;margin:2px;width:20px"/><!-- 170x215-->
+<img ng-src="{{::mep.Photo}}" class="namephoto"/><!-- 170x215-->
 {{::mep.Name.full}}</h2>
   <md-content>
 
@@ -18,40 +18,58 @@
 
   </md-content>
 <div ng-if="category=='Personal'">
-<img ng-src="{{::mep.Photo}}" style="float:left;margin:2px;transform: scale(0.8);"/><!-- 170x215-->
+<table>
+<tr>
+<td>
+<img ng-src="{{::mep.Photo}}" style="float:left;margin:2px;"/><!-- 170x215-->
 
-<p>{{::mep.Birth.date|date:'dd. MMMM yyyy'}}, {{::mep.Birth.place}}</p>
+</td>
+<td>
+
 
 <div class="sozialbuttons">
-<table>
+<table class="meptabs">
+<tr><td>born</td><td>{{::mep.Birth.date|date:'dd. MMMM yyyy'}}, {{::mep.Birth.place}}</td></tr>
+<tr><td>country</td><td> {{::mep.Constituencies[0].country}}</td></tr>
+<tr><td>party</td><td> {{::mep.Constituencies[0].party}}</td></tr>
+<tr><td>{{::mep.Groups[0].groupid}}</td><td> {{::mep.Groups[0].Organization}}</td></tr>
+<tr><td>role</td><td> {{::mep.Groups[0].role}}</td></tr>
 <tr ng-repeat="mail in mep.Mail"><td><a  href="mailto:{{::mail}}" title="{{::mail}}"><img src="icons/email.jpg"/></a></td><td>{{::mail}}</td></tr>
 <tr ng-repeat="site in mep.Homepage"><td><a ng-href="{{::site}}" title="{{::site}}"><img src="icons/www.jpg"/></a></td><td>{{::site}}</td></tr>
 <tr ng-repeat="site in mep.Facebook"><td><a ng-href="{{::site}}" title="Facebook"><img src="icons/facebook.jpg"/></a></td><td>{{::site}}</td></tr>
 <tr ng-repeat="site in mep.Twitter"><td><a ng-href="{{::site}}" title="Twitter"><img src="icons/twitter.jpg"/></a></td><td>{{::site}}</td></tr>
+
 </table>
 </div>
+</td>
+</tr>
+</table>
 
-<ul>
-<li ng-repeat="item in mep.Groups">
-<b>{{::item.groupid}}</b> {{::item.Organization}}
-</li>
-</ul>
-<div ng-repeat="(name,address) in mep.Addresses">
-	<h5>{{name}}</h5>
-	<table class="mep">
+
+
+    <md-tabs md-dynamic-height md-border-bottom>
+
+<md-tab ng-repeat="(name,address) in mep.Addresses" label="{{name}}">
+<br/>
+	<table class="meptabs">
 	<tr ng-if="address.Phone"><td>Phone</td><td>{{address.Phone}}</td></tr>
 	<tr ng-if="address.Fax"><td>Fax</td><td>{{address.Fax}}</td></tr>
 
 	<tr ng-repeat="(key,value) in address.Address">
-		<td style="color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px">{{key}} </td><td> {{value}}</td>
+		<td tyle="color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px">{{key}} </td><td> {{value}}</td>
 	</tr>
 	</table>
 <!--
 	<div ng-if="name=='Postal2'" ng-repeat="addressLine in mep.Addresses['Postal']"]>{{addressLine}}</div>
 -->
-</div>
+</md-tab>
+</md-tabs>
 
 <div>{{::mep.CV[0]}}</div>
+<br/> <br/> <br/> <br/>
+<br/> <br/> <br/> <br/>
+<br/> <br/> <br/> <br/>
+<br/> <br/> <br/> <br/>
 </div>
 
 

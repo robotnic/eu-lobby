@@ -2,6 +2,22 @@
 border:0px solid red;
 border-spacing:0px
 }
-.mep td:first-child{
-color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px;
+.mep .meptabs td {
+vertical-align:top;
+padding-bottom:10px;
+padding:4px;
+
+}
+.mep .meptabs td:first-child{
+border-right:1px solid #c0c0c0;
+color:grey;text-align:right;font-weight:500;opacity:0.5;padding:4px;
+}
+.mep .namephoto{
+height:40px;
+margin-left:5px;
+}
+
+.timeline{
+width:500px;
+overflow:auto;
 }

@@ -37,7 +37,7 @@ angular.module("cal",["angularMoment"])
 .controller("calController",function($scope){
 	$scope.customer={name:"franz"};
 
-        $scope.year=2015;
+        $scope.year=(new Date()).getFullYear();
         $scope.selectedday={};
         console.log("ddaa");
         $scope.$watch("year",function(){
