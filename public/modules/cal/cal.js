@@ -3,18 +3,33 @@ angular.module("cal",["angularMoment"])
   return {
     template: `
 
-<div style="position:relative;padding:20px">
+<div style="position:relative;padding-top:20px;min-height:100%">
 <span  class="dateswitch">
 <a  ng-click="year=year-1" style="cursor:pointer">&#160; &lt; &#160;</a>
 <span>{{year}}</span>
 <a ng-click="year=year+1" style="cursor:pointer">&#160; &gt; &#160;</a>
 </span>
-<div ng-repeat="month in cal.months" style="position:relative;padding:3px" ng-init="monthIndex=$index">
-<span class="md-body-2">{{::month.name}}</span>
-<div ng-repeat="day in month.days track by $index" class="day {{::day.activities[0].group}}" style="left:{{::100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{::day.title}}" ng-click="select(day)">{{::$index +1}}
+<div>
+<!-- fixed -->
+<div style="position:absolute;background-color:white;z-index:1;">
+	<div ng-repeat="month in cal.months" style="position:relative;padding:3px;padding-right:10px" ng-init="monthIndex=$index">
+		<span class="md-body-2">{{::month.name}}</span>
+	</div>
 </div>
 
+<div style="width:100%;overflow:auto;">
+	<div ng-repeat="month in cal.months" style="position:relative;padding:3px" ng-init="monthIndex=$index">
+	<span class="md-body-2" style="opacity:0">{{::month.name}}</span>
+	<div ng-repeat="day in month.days track by $index" class="day {{day.activities[0].group}}" style="left:{{::100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{day.title}}" ng-click="select(day)">{{::$index +1}}
+	</div>
+	</div>
 </div>
+
+
+
+
+</div>
+
 </div>
 </div>
 <md-list>

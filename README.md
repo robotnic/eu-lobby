@@ -30,6 +30,7 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 > mongo
 use eulobby
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
+db.ep_amendments.find().forEach(function(doc){doc.id=doc._id;db.ep_amendments.save(doc)})
 
 ```
 create index to speed up queries
@@ -39,7 +40,11 @@ db.dossiers.createIndex({"createdAt":1})
 db.dossiers.createIndex({"id":1})
 db.meps_current.createIndex({"Groups.country":1})
 db.meps_current.createIndex({"Birth.date":1})
-
+db.ep_votes.createIndex({"For.groups.votes.ep_id":1})
+db.ep_votes.createIndex({"Against.groups.votes.ep_id":1})
+db.ep_votes.createIndex({"Abstain.groups.votes.ep_id":1})
+db.ep_amendments.createIndex({"meps":1})
+db.ep_amendments.createIndex({"date":1})
 ```
 Start
 --------

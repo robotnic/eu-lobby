@@ -69,6 +69,8 @@ var sources=[
 "public/modules/timeline/timeline.js",
 "public/bower_components/ngInfiniteScroll/build/ng-infinite-scroll.js",
 "public/bower_components/lodash/dist/lodash.js",
+"public/bower_components/google-diff-match-patch/diff_match_patch.js",
+"public/bower_components/angular-diff-match-patch/angular-diff-match-patch.js",
 "build/angular-templates.js",
 "public/script.js"
 ]

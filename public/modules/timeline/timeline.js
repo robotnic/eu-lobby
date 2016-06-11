@@ -4,8 +4,8 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
     templateNamespace: 'svg',
 
     template: `
-
-<svg ng-if="height" width="95%" ng-attr-height="{{height +220}}px" ng-attr-view_box="0 0 1200 {{::height +220}}" xmlns:xlink="http://www.w3.org/1999/xlink">
+<div style="width:95%;overflow:auto;zoom:{{zoom}}">
+<svg ng-if="height" width="2000px" ng-attr-height="{{height +220}}px" ng-attr-view_box="0 0 2200 {{::height +220}}" xmlns:xlink="http://www.w3.org/1999/xlink">
 <!-- {{height}}-->
 <g transform="translate(50,50)">
 
@@ -33,6 +33,8 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
 </g>
 
 </svg>
+</div>
+<md-button  class="md-raised md-primary" ng-click="zoomin()">zoom</md-button>
 `,
     scope:{
 	mep:"=",
@@ -42,9 +44,10 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
   };
 })
 .controller("timelineController",function($scope,$sce){
-	var totalwidth=1000;
-	var height=400;
+	var totalwidth=2000;
+	var height=800;
 	var types=["Constituencies","Groups","Committees","Delegations"];
+	$scope.zoom="50%";
 	$scope.pixellines=[];
 	var delta=0;
 	$scope.$watch("mep.UserID",function(){
@@ -59,6 +62,10 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
 			}
 		}
 	});
+
+	$scope.zoomin=function(){
+		$scope.zoom="100%";
+	}
 
 	function makeInfo(minmax,lines,type){
 		if(!lines){

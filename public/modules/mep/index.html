@@ -1,4 +1,5 @@
 <div class="mep">
+
 <!--
 <md-progress-linear ng-if="loading" md-mode="indeterminate"></md-progress-linear>
 -->
@@ -9,7 +10,7 @@
 
     <md-tabs  md-dynamic-height md-border-bottom>
       <md-tab 
-	ng-repeat="type in ['Personal','Timeline','Calendar','Votings']" 
+	ng-repeat="type in ['Personal','Timeline','Calendar','Votings','Amendments']" 
 	label="{{type}}"
 	ng-click="onTabSelected(type)"
 	md-active="type==category"
@@ -75,6 +76,25 @@
 
 <timeline ng-if="category=='Timeline'" mep="mep" onselect="select(day)"></timeline>
 <cal ng-if="category=='Calendar'" mep="mep" onselect="select(day)"></cal>
+
+
+<div ng-if="category=='Votings'" ng-repeat="(title,vote) in votings"><h4>{{vote[0].ts|date:'dd. MMMM yyyy'}} {{title}}</h4>
+<div ng-repeat="item in vote|orderBy:'ts'"style="margin-left:40px" class="{{item.vote}}">{{item.title}} </div>
+ </div>
+<div ng-if="loadingAmendment">loading...</div>
+<div ng-if="category=='Amendments'" ng-repeat="amendment in amendments">
+  <md-content>
+	<h4>{{amendment.date|date:'dd. MMMM yyyy'}} {{title}}
+	<span ng-repeat="committee in amendment.committee">{{committee}}</span>
+	</h4>
+
+	<a ng-href="{{amendment.src}}" target="_blank"><p class="md-body-1">{{amendment.reference}} {{amendment.seq}}</p></a>
+	<div ng-repeat="mep in amendment.meps" class="avatar icon-{{::mep}}" title="{{::mep}}"></div>
+	<div class="textdiff" semantic-diff right-obj="amendment.newtext" left-obj="amendment.oldtext"></div>
+
+  </md-content>
+</div>
+
 </div>
 
 

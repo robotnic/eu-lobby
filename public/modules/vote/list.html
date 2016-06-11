@@ -30,12 +30,12 @@ ng-src="http://www.europarl.europa.eu/mepphoto/{{rapporteur.ref}}.jpg" style="he
 	<div lex="33" ng-style="item.passed==true ? {'background-color':'rgba(0,255,0,0.1)'}:{'background-color':'rgba(255,0,0,0.1)'}" style="min-width:300px;border:0px solid black;margin:15px;display:inline-block"  ng-repeat="item in report.items| orderBy:'ts':false" ui-sref="votesget({voteid:item.voteid})" title="{{item.ts|date:'HH:mm:ss'}}">
 	<div style="position:relative">
 		<div style="position:absolute;right:5px;top:11px">
-			<span style="color:green">{{item.For.total}}</span>
-			<span style="color:red">{{item.Against.total}}</span>
-			<span style="color:grey">{{item.Abstain.total}}</span>
+			<span style="color:green">{{::item.For.total}}</span>
+			<span style="color:red">{{::item.Against.total}}</span>
+			<span style="color:grey">{{::item.Abstain.total}}</span>
 		</div>
 		<div >
-		<div class="resultbar For" style="left:0;width:{{item.For.percent }}%;"></div>
+		<div class="resultbar For" style="left:0;width:{{::item.For.percent }}%;"></div>
 		<div class="resultbar Against" style="left:{{item.For.percent}}%;width:{{item.Against.percent}}%;"></div>
 		<div class="resultbar Abstain" style="left:{{0+item.For.percent + item.Against.percent}}%;width:{{item.Abstain.percent}}%;"></div>
 		</div>

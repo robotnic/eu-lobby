@@ -69666,23 +69666,51 @@ angular.module('dossier', [])
 	$http.get("/api/dossiers/"+$stateParams.dossierid).then(function(response){
 		console.log("r",response.data);
 		$scope.dossier=response.data;
+		console.log("HAB DI REF",$scope.dossier.procedure.reference);
+		//$http.get("/api/votes?dossierid="+$stateParams.dossierid).then(function(response){
+		$http.get("/api/votes?epref="+$scope.dossier.procedure.reference).then(function(response){
+			$scope.votings=response.data
+			for(var i=0;i<$scope.votings.data.length;i++){
+				if(parseInt($scope.votings.data[i].For.total) > parseInt($scope.votings.data[i].Against.total)){
+					$scope.votings.data[i].result="For";
+				}else{
+					$scope.votings.data[i].result="Against";
+				}
+			}
+		});
 	},function(error){
 		console.log(error);
-	});
-	$http.get("/api/votes/?dossierid="+$stateParams.dossierid).then(function(response){
-		console.log(response.data);
-		$scope.votings=response.data
 	});
 })
 console.log("passt");
 
-angular.module('mep', [])
-    .controller("mepcontroller", function($scope, $rootScope, $http, $stateParams,$state) {
+angular.module('mep', ['diff-match-patch'])
+    .controller("mepcontroller", function($scope, $rootScope, $http, $stateParams,$state,$q) {
         var voteTypes = ["Against", "For", "Abstain"];
         $scope.mep = {};
-        $scope.votings = [];
+        $scope.votings = {};
         console.log("mepcontroller");
         $rootScope.loading = true;
+
+	//for the diff
+	$scope.options = {
+		editCost: 4,
+		attrs: {
+		  insert: {
+		    'data-attr': 'insert',
+		    'class': 'insertion'
+		  },
+		  delete: {
+		    'data-attr': 'delete'
+		  },
+		  equal: {
+		    'data-attr': 'equal'
+		  }
+		}
+	      };
+
+
+
         $http.get("/api/meps/" + $stateParams.userid).then(function(response) {
             console.log("mep", response);
             $scope.mep = response.data;
@@ -69711,27 +69739,69 @@ angular.module('mep', [])
         //monge shell{"For.groups.votes.ep_id":124967}
         var query = "Against.groups.votes.ep_id=" + $stateParams.userid;
 
+	var requests={}
         for (var i = 0; i < voteTypes.length; i++) {
             var voteType = voteTypes[i];
             console.log(voteType);
-            //        goForIt(voteType, $stateParams.userid);
+	    requests[voteType]=goForIt(voteType, $stateParams.userid);
         }
+	$q.all(requests).then(function(response){
+		console.log("hellp",response)
+		$scope.votes=response;
+		for (var i = 0; i < voteTypes.length; i++) {
+			var data=response[voteTypes[i]].data;
+			console.log(data.total);
+			for(var j=0;j<data.data.length;j++){
+				data.data[j].vote=voteTypes[i];
+				var eptitle=data.data[j].eptitle
+				if(!eptitle){
+				   var title=data.data[j].title
+			           var lastIndex=title.lastIndexOf("-");		
+				   eptitle=data.data[j].title.substring(0,lastIndex);
+				}
+				if( !$scope.votings[eptitle]){
+					$scope.votings[eptitle]=[]
+				}
+				$scope.votings[eptitle].push(data.data[j]);
+			}
+		}
+	});
+
 
         //	var query="Against.groups.votes.ep_id="+$stateParams.userid;
 
         function goForIt(voteType, userid) {
             var query = voteType + ".groups.votes.ep_id=" + userid;
-            console.log(query);
-            var projection = "$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid&$select[]=" + voteType + ".groups.votes.$." + userid;
-            $http.get("/api/votes/?" + query + "&$limit=10$skip=0&$sort[ts]=-1&" + projection).then(function(response) {
-                console.log(response.data);
-                for (var i = 0; i < response.data.data.length; i++) {
-                    response.data.data[i].vote = voteType;
-                }
-                $scope.votings = $scope.votings.concat(response.data.data)
-                console.log($scope.votings);
-            });
+            var projection = "$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid";
+            return $http.get("/api/votes/?" + query + "&$limit=50$skip=0&$sort[ts]=-1&" + projection);
         }
+
+	function getAmendment(mep){
+		$scope.loadingAmendment=true;
+		var url="//"+location.host+"/api/amendments?meps="+mep+"&$limit=50&$sort[date]=-1"
+		$http.get(url).then(function(response){
+			$scope.loadingAmendment=false;
+			console.log("amendment",response.data);
+			$scope.amendments=response.data.data;
+			for(var i=0;i<$scope.amendments.length;i++){
+				console.log($scope.amendments[i]);
+
+				$scope.amendments[i].newtext="";
+				if($scope.amendments[i].new){
+					$scope.amendments[i].newtext=$scope.amendments[i].new.join("\n");
+				}
+
+				$scope.amendments[i].oldtext="";
+				if($scope.amendments[i].old){
+					$scope.amendments[i].oldtext=$scope.amendments[i].old.join("\n");
+				};
+			}
+		},function(error){
+			$scope.loadingAmendment=error;
+		});
+	}
+	getAmendment($stateParams.userid)
+	$scope.userid=$stateParams.userid;
     });
 
 /*
@@ -69746,7 +69816,7 @@ angular.module('vote', [])
 .controller("votescontroller", function($scope,$http,$stateParams){
         console.log("votescontroller meldet sich zum dienst");
 	var skip=0;
-	var limit=25;
+	var limit=10;
 	var search="";
 	$scope.search=function(){
 		console.log($scope.searchstring);
@@ -69767,6 +69837,7 @@ angular.module('vote', [])
 	load();
 
 	function load(keepdata){
+		console.log("LIMIT",limit,skip);
 		$scope.loading=true;
 		var sort=JSON.stringify({UserId:1});
 		$http.get("/api/votes?$skip="+skip+"&$limit="+limit+"&$sort[ts]=-1&$select[]=report&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid&$select[]=For.total&$select[]=Against.total&$select[]=Abstain.total&$select[]=rapporteur&$select[]=dossierid"+search,{cache:true})
@@ -69813,18 +69884,33 @@ angular.module("cal",["angularMoment"])
   return {
     template: `
 
-<div style="position:relative;padding:20px">
+<div style="position:relative;padding-top:20px;min-height:100%">
 <span  class="dateswitch">
 <a  ng-click="year=year-1" style="cursor:pointer">&#160; &lt; &#160;</a>
 <span>{{year}}</span>
 <a ng-click="year=year+1" style="cursor:pointer">&#160; &gt; &#160;</a>
 </span>
-<div ng-repeat="month in cal.months" style="position:relative;padding:3px" ng-init="monthIndex=$index">
-<span class="md-body-2">{{::month.name}}</span>
-<div ng-repeat="day in month.days track by $index" class="day {{::day.activities[0].group}}" style="left:{{::100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{::day.title}}" ng-click="select(day)">{{::$index +1}}
+<div>
+<!-- fixed -->
+<div style="position:absolute;background-color:white;z-index:1;">
+	<div ng-repeat="month in cal.months" style="position:relative;padding:3px;padding-right:10px" ng-init="monthIndex=$index">
+		<span class="md-body-2">{{::month.name}}</span>
+	</div>
 </div>
 
+<div style="width:100%;overflow:auto;">
+	<div ng-repeat="month in cal.months" style="position:relative;padding:3px" ng-init="monthIndex=$index">
+	<span class="md-body-2" style="opacity:0">{{::month.name}}</span>
+	<div ng-repeat="day in month.days track by $index" class="day {{day.activities[0].group}}" style="left:{{::100+$index*27 + month.days[0].day*27}}px;top:0px" ng-class="{free:day.weekend,today:day.today,activity:day.activities}" title="{{day.title}}" ng-click="select(day)">{{::$index +1}}
+	</div>
+	</div>
 </div>
+
+
+
+
+</div>
+
 </div>
 </div>
 <md-list>
@@ -69932,8 +70018,8 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
     templateNamespace: 'svg',
 
     template: `
-
-<svg ng-if="height" width="95%" ng-attr-height="{{height +220}}px" ng-attr-view_box="0 0 1200 {{::height +220}}" xmlns:xlink="http://www.w3.org/1999/xlink">
+<div style="width:95%;overflow:auto;zoom:{{zoom}}">
+<svg ng-if="height" width="2000px" ng-attr-height="{{height +220}}px" ng-attr-view_box="0 0 2200 {{::height +220}}" xmlns:xlink="http://www.w3.org/1999/xlink">
 <!-- {{height}}-->
 <g transform="translate(50,50)">
 
@@ -69961,6 +70047,8 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
 </g>
 
 </svg>
+</div>
+<md-button  class="md-raised md-primary" ng-click="zoomin()">zoom</md-button>
 `,
     scope:{
 	mep:"=",
@@ -69970,9 +70058,10 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
   };
 })
 .controller("timelineController",function($scope,$sce){
-	var totalwidth=1000;
-	var height=400;
+	var totalwidth=2000;
+	var height=800;
 	var types=["Constituencies","Groups","Committees","Delegations"];
+	$scope.zoom="50%";
 	$scope.pixellines=[];
 	var delta=0;
 	$scope.$watch("mep.UserID",function(){
@@ -69987,6 +70076,10 @@ angular.module("timeline",["angularMoment",'ngSanitize'])
 			}
 		}
 	});
+
+	$scope.zoomin=function(){
+		$scope.zoom="100%";
+	}
 
 	function makeInfo(minmax,lines,type){
 		if(!lines){
@@ -86181,16 +86274,354 @@ mod.directive('infiniteScroll', [
   }
 }.call(this));
 
+(function(){function diff_match_patch(){this.Diff_Timeout=1;this.Diff_EditCost=4;this.Match_Threshold=0.5;this.Match_Distance=1E3;this.Patch_DeleteThreshold=0.5;this.Patch_Margin=4;this.Match_MaxBits=32}
+diff_match_patch.prototype.diff_main=function(a,b,c,d){"undefined"==typeof d&&(d=0>=this.Diff_Timeout?Number.MAX_VALUE:(new Date).getTime()+1E3*this.Diff_Timeout);if(null==a||null==b)throw Error("Null input. (diff_main)");if(a==b)return a?[[0,a]]:[];"undefined"==typeof c&&(c=!0);var e=c,f=this.diff_commonPrefix(a,b);c=a.substring(0,f);a=a.substring(f);b=b.substring(f);var f=this.diff_commonSuffix(a,b),g=a.substring(a.length-f);a=a.substring(0,a.length-f);b=b.substring(0,b.length-f);a=this.diff_compute_(a,
+b,e,d);c&&a.unshift([0,c]);g&&a.push([0,g]);this.diff_cleanupMerge(a);return a};
+diff_match_patch.prototype.diff_compute_=function(a,b,c,d){if(!a)return[[1,b]];if(!b)return[[-1,a]];var e=a.length>b.length?a:b,f=a.length>b.length?b:a,g=e.indexOf(f);return-1!=g?(c=[[1,e.substring(0,g)],[0,f],[1,e.substring(g+f.length)]],a.length>b.length&&(c[0][0]=c[2][0]=-1),c):1==f.length?[[-1,a],[1,b]]:(e=this.diff_halfMatch_(a,b))?(f=e[0],a=e[1],g=e[2],b=e[3],e=e[4],f=this.diff_main(f,g,c,d),c=this.diff_main(a,b,c,d),f.concat([[0,e]],c)):c&&100<a.length&&100<b.length?this.diff_lineMode_(a,b,
+d):this.diff_bisect_(a,b,d)};
+diff_match_patch.prototype.diff_lineMode_=function(a,b,c){var d=this.diff_linesToChars_(a,b);a=d.chars1;b=d.chars2;d=d.lineArray;a=this.diff_main(a,b,!1,c);this.diff_charsToLines_(a,d);this.diff_cleanupSemantic(a);a.push([0,""]);for(var e=d=b=0,f="",g="";b<a.length;){switch(a[b][0]){case 1:e++;g+=a[b][1];break;case -1:d++;f+=a[b][1];break;case 0:if(1<=d&&1<=e){a.splice(b-d-e,d+e);b=b-d-e;d=this.diff_main(f,g,!1,c);for(e=d.length-1;0<=e;e--)a.splice(b,0,d[e]);b+=d.length}d=e=0;g=f=""}b++}a.pop();return a};
+diff_match_patch.prototype.diff_bisect_=function(a,b,c){for(var d=a.length,e=b.length,f=Math.ceil((d+e)/2),g=f,h=2*f,j=Array(h),i=Array(h),k=0;k<h;k++)j[k]=-1,i[k]=-1;j[g+1]=0;i[g+1]=0;for(var k=d-e,q=0!=k%2,r=0,t=0,p=0,w=0,v=0;v<f&&!((new Date).getTime()>c);v++){for(var n=-v+r;n<=v-t;n+=2){var l=g+n,m;m=n==-v||n!=v&&j[l-1]<j[l+1]?j[l+1]:j[l-1]+1;for(var s=m-n;m<d&&s<e&&a.charAt(m)==b.charAt(s);)m++,s++;j[l]=m;if(m>d)t+=2;else if(s>e)r+=2;else if(q&&(l=g+k-n,0<=l&&l<h&&-1!=i[l])){var u=d-i[l];if(m>=
+u)return this.diff_bisectSplit_(a,b,m,s,c)}}for(n=-v+p;n<=v-w;n+=2){l=g+n;u=n==-v||n!=v&&i[l-1]<i[l+1]?i[l+1]:i[l-1]+1;for(m=u-n;u<d&&m<e&&a.charAt(d-u-1)==b.charAt(e-m-1);)u++,m++;i[l]=u;if(u>d)w+=2;else if(m>e)p+=2;else if(!q&&(l=g+k-n,0<=l&&(l<h&&-1!=j[l])&&(m=j[l],s=g+m-l,u=d-u,m>=u)))return this.diff_bisectSplit_(a,b,m,s,c)}}return[[-1,a],[1,b]]};
+diff_match_patch.prototype.diff_bisectSplit_=function(a,b,c,d,e){var f=a.substring(0,c),g=b.substring(0,d);a=a.substring(c);b=b.substring(d);f=this.diff_main(f,g,!1,e);e=this.diff_main(a,b,!1,e);return f.concat(e)};
+diff_match_patch.prototype.diff_linesToChars_=function(a,b){function c(a){for(var b="",c=0,f=-1,g=d.length;f<a.length-1;){f=a.indexOf("\n",c);-1==f&&(f=a.length-1);var r=a.substring(c,f+1),c=f+1;(e.hasOwnProperty?e.hasOwnProperty(r):void 0!==e[r])?b+=String.fromCharCode(e[r]):(b+=String.fromCharCode(g),e[r]=g,d[g++]=r)}return b}var d=[],e={};d[0]="";var f=c(a),g=c(b);return{chars1:f,chars2:g,lineArray:d}};
+diff_match_patch.prototype.diff_charsToLines_=function(a,b){for(var c=0;c<a.length;c++){for(var d=a[c][1],e=[],f=0;f<d.length;f++)e[f]=b[d.charCodeAt(f)];a[c][1]=e.join("")}};diff_match_patch.prototype.diff_commonPrefix=function(a,b){if(!a||!b||a.charAt(0)!=b.charAt(0))return 0;for(var c=0,d=Math.min(a.length,b.length),e=d,f=0;c<e;)a.substring(f,e)==b.substring(f,e)?f=c=e:d=e,e=Math.floor((d-c)/2+c);return e};
+diff_match_patch.prototype.diff_commonSuffix=function(a,b){if(!a||!b||a.charAt(a.length-1)!=b.charAt(b.length-1))return 0;for(var c=0,d=Math.min(a.length,b.length),e=d,f=0;c<e;)a.substring(a.length-e,a.length-f)==b.substring(b.length-e,b.length-f)?f=c=e:d=e,e=Math.floor((d-c)/2+c);return e};
+diff_match_patch.prototype.diff_commonOverlap_=function(a,b){var c=a.length,d=b.length;if(0==c||0==d)return 0;c>d?a=a.substring(c-d):c<d&&(b=b.substring(0,c));c=Math.min(c,d);if(a==b)return c;for(var d=0,e=1;;){var f=a.substring(c-e),f=b.indexOf(f);if(-1==f)return d;e+=f;if(0==f||a.substring(c-e)==b.substring(0,e))d=e,e++}};
+diff_match_patch.prototype.diff_halfMatch_=function(a,b){function c(a,b,c){for(var d=a.substring(c,c+Math.floor(a.length/4)),e=-1,g="",h,j,n,l;-1!=(e=b.indexOf(d,e+1));){var m=f.diff_commonPrefix(a.substring(c),b.substring(e)),s=f.diff_commonSuffix(a.substring(0,c),b.substring(0,e));g.length<s+m&&(g=b.substring(e-s,e)+b.substring(e,e+m),h=a.substring(0,c-s),j=a.substring(c+m),n=b.substring(0,e-s),l=b.substring(e+m))}return 2*g.length>=a.length?[h,j,n,l,g]:null}if(0>=this.Diff_Timeout)return null;
+var d=a.length>b.length?a:b,e=a.length>b.length?b:a;if(4>d.length||2*e.length<d.length)return null;var f=this,g=c(d,e,Math.ceil(d.length/4)),d=c(d,e,Math.ceil(d.length/2)),h;if(!g&&!d)return null;h=d?g?g[4].length>d[4].length?g:d:d:g;var j;a.length>b.length?(g=h[0],d=h[1],e=h[2],j=h[3]):(e=h[0],j=h[1],g=h[2],d=h[3]);h=h[4];return[g,d,e,j,h]};
+diff_match_patch.prototype.diff_cleanupSemantic=function(a){for(var b=!1,c=[],d=0,e=null,f=0,g=0,h=0,j=0,i=0;f<a.length;)0==a[f][0]?(c[d++]=f,g=j,h=i,i=j=0,e=a[f][1]):(1==a[f][0]?j+=a[f][1].length:i+=a[f][1].length,e&&(e.length<=Math.max(g,h)&&e.length<=Math.max(j,i))&&(a.splice(c[d-1],0,[-1,e]),a[c[d-1]+1][0]=1,d--,d--,f=0<d?c[d-1]:-1,i=j=h=g=0,e=null,b=!0)),f++;b&&this.diff_cleanupMerge(a);this.diff_cleanupSemanticLossless(a);for(f=1;f<a.length;){if(-1==a[f-1][0]&&1==a[f][0]){b=a[f-1][1];c=a[f][1];
+d=this.diff_commonOverlap_(b,c);e=this.diff_commonOverlap_(c,b);if(d>=e){if(d>=b.length/2||d>=c.length/2)a.splice(f,0,[0,c.substring(0,d)]),a[f-1][1]=b.substring(0,b.length-d),a[f+1][1]=c.substring(d),f++}else if(e>=b.length/2||e>=c.length/2)a.splice(f,0,[0,b.substring(0,e)]),a[f-1][0]=1,a[f-1][1]=c.substring(0,c.length-e),a[f+1][0]=-1,a[f+1][1]=b.substring(e),f++;f++}f++}};
+diff_match_patch.prototype.diff_cleanupSemanticLossless=function(a){function b(a,b){if(!a||!b)return 6;var c=a.charAt(a.length-1),d=b.charAt(0),e=c.match(diff_match_patch.nonAlphaNumericRegex_),f=d.match(diff_match_patch.nonAlphaNumericRegex_),g=e&&c.match(diff_match_patch.whitespaceRegex_),h=f&&d.match(diff_match_patch.whitespaceRegex_),c=g&&c.match(diff_match_patch.linebreakRegex_),d=h&&d.match(diff_match_patch.linebreakRegex_),i=c&&a.match(diff_match_patch.blanklineEndRegex_),j=d&&b.match(diff_match_patch.blanklineStartRegex_);
+return i||j?5:c||d?4:e&&!g&&h?3:g||h?2:e||f?1:0}for(var c=1;c<a.length-1;){if(0==a[c-1][0]&&0==a[c+1][0]){var d=a[c-1][1],e=a[c][1],f=a[c+1][1],g=this.diff_commonSuffix(d,e);if(g)var h=e.substring(e.length-g),d=d.substring(0,d.length-g),e=h+e.substring(0,e.length-g),f=h+f;for(var g=d,h=e,j=f,i=b(d,e)+b(e,f);e.charAt(0)===f.charAt(0);){var d=d+e.charAt(0),e=e.substring(1)+f.charAt(0),f=f.substring(1),k=b(d,e)+b(e,f);k>=i&&(i=k,g=d,h=e,j=f)}a[c-1][1]!=g&&(g?a[c-1][1]=g:(a.splice(c-1,1),c--),a[c][1]=
+h,j?a[c+1][1]=j:(a.splice(c+1,1),c--))}c++}};diff_match_patch.nonAlphaNumericRegex_=/[^a-zA-Z0-9]/;diff_match_patch.whitespaceRegex_=/\s/;diff_match_patch.linebreakRegex_=/[\r\n]/;diff_match_patch.blanklineEndRegex_=/\n\r?\n$/;diff_match_patch.blanklineStartRegex_=/^\r?\n\r?\n/;
+diff_match_patch.prototype.diff_cleanupEfficiency=function(a){for(var b=!1,c=[],d=0,e=null,f=0,g=!1,h=!1,j=!1,i=!1;f<a.length;){if(0==a[f][0])a[f][1].length<this.Diff_EditCost&&(j||i)?(c[d++]=f,g=j,h=i,e=a[f][1]):(d=0,e=null),j=i=!1;else if(-1==a[f][0]?i=!0:j=!0,e&&(g&&h&&j&&i||e.length<this.Diff_EditCost/2&&3==g+h+j+i))a.splice(c[d-1],0,[-1,e]),a[c[d-1]+1][0]=1,d--,e=null,g&&h?(j=i=!0,d=0):(d--,f=0<d?c[d-1]:-1,j=i=!1),b=!0;f++}b&&this.diff_cleanupMerge(a)};
+diff_match_patch.prototype.diff_cleanupMerge=function(a){a.push([0,""]);for(var b=0,c=0,d=0,e="",f="",g;b<a.length;)switch(a[b][0]){case 1:d++;f+=a[b][1];b++;break;case -1:c++;e+=a[b][1];b++;break;case 0:1<c+d?(0!==c&&0!==d&&(g=this.diff_commonPrefix(f,e),0!==g&&(0<b-c-d&&0==a[b-c-d-1][0]?a[b-c-d-1][1]+=f.substring(0,g):(a.splice(0,0,[0,f.substring(0,g)]),b++),f=f.substring(g),e=e.substring(g)),g=this.diff_commonSuffix(f,e),0!==g&&(a[b][1]=f.substring(f.length-g)+a[b][1],f=f.substring(0,f.length-
+g),e=e.substring(0,e.length-g))),0===c?a.splice(b-d,c+d,[1,f]):0===d?a.splice(b-c,c+d,[-1,e]):a.splice(b-c-d,c+d,[-1,e],[1,f]),b=b-c-d+(c?1:0)+(d?1:0)+1):0!==b&&0==a[b-1][0]?(a[b-1][1]+=a[b][1],a.splice(b,1)):b++,c=d=0,f=e=""}""===a[a.length-1][1]&&a.pop();c=!1;for(b=1;b<a.length-1;)0==a[b-1][0]&&0==a[b+1][0]&&(a[b][1].substring(a[b][1].length-a[b-1][1].length)==a[b-1][1]?(a[b][1]=a[b-1][1]+a[b][1].substring(0,a[b][1].length-a[b-1][1].length),a[b+1][1]=a[b-1][1]+a[b+1][1],a.splice(b-1,1),c=!0):a[b][1].substring(0,
+a[b+1][1].length)==a[b+1][1]&&(a[b-1][1]+=a[b+1][1],a[b][1]=a[b][1].substring(a[b+1][1].length)+a[b+1][1],a.splice(b+1,1),c=!0)),b++;c&&this.diff_cleanupMerge(a)};diff_match_patch.prototype.diff_xIndex=function(a,b){var c=0,d=0,e=0,f=0,g;for(g=0;g<a.length;g++){1!==a[g][0]&&(c+=a[g][1].length);-1!==a[g][0]&&(d+=a[g][1].length);if(c>b)break;e=c;f=d}return a.length!=g&&-1===a[g][0]?f:f+(b-e)};
+diff_match_patch.prototype.diff_prettyHtml=function(a){for(var b=[],c=/&/g,d=/</g,e=/>/g,f=/\n/g,g=0;g<a.length;g++){var h=a[g][0],j=a[g][1],j=j.replace(c,"&amp;").replace(d,"&lt;").replace(e,"&gt;").replace(f,"&para;<br>");switch(h){case 1:b[g]='<ins style="background:#e6ffe6;">'+j+"</ins>";break;case -1:b[g]='<del style="background:#ffe6e6;">'+j+"</del>";break;case 0:b[g]="<span>"+j+"</span>"}}return b.join("")};
+diff_match_patch.prototype.diff_text1=function(a){for(var b=[],c=0;c<a.length;c++)1!==a[c][0]&&(b[c]=a[c][1]);return b.join("")};diff_match_patch.prototype.diff_text2=function(a){for(var b=[],c=0;c<a.length;c++)-1!==a[c][0]&&(b[c]=a[c][1]);return b.join("")};diff_match_patch.prototype.diff_levenshtein=function(a){for(var b=0,c=0,d=0,e=0;e<a.length;e++){var f=a[e][0],g=a[e][1];switch(f){case 1:c+=g.length;break;case -1:d+=g.length;break;case 0:b+=Math.max(c,d),d=c=0}}return b+=Math.max(c,d)};
+diff_match_patch.prototype.diff_toDelta=function(a){for(var b=[],c=0;c<a.length;c++)switch(a[c][0]){case 1:b[c]="+"+encodeURI(a[c][1]);break;case -1:b[c]="-"+a[c][1].length;break;case 0:b[c]="="+a[c][1].length}return b.join("\t").replace(/%20/g," ")};
+diff_match_patch.prototype.diff_fromDelta=function(a,b){for(var c=[],d=0,e=0,f=b.split(/\t/g),g=0;g<f.length;g++){var h=f[g].substring(1);switch(f[g].charAt(0)){case "+":try{c[d++]=[1,decodeURI(h)]}catch(j){throw Error("Illegal escape in diff_fromDelta: "+h);}break;case "-":case "=":var i=parseInt(h,10);if(isNaN(i)||0>i)throw Error("Invalid number in diff_fromDelta: "+h);h=a.substring(e,e+=i);"="==f[g].charAt(0)?c[d++]=[0,h]:c[d++]=[-1,h];break;default:if(f[g])throw Error("Invalid diff operation in diff_fromDelta: "+
+f[g]);}}if(e!=a.length)throw Error("Delta length ("+e+") does not equal source text length ("+a.length+").");return c};diff_match_patch.prototype.match_main=function(a,b,c){if(null==a||null==b||null==c)throw Error("Null input. (match_main)");c=Math.max(0,Math.min(c,a.length));return a==b?0:a.length?a.substring(c,c+b.length)==b?c:this.match_bitap_(a,b,c):-1};
+diff_match_patch.prototype.match_bitap_=function(a,b,c){function d(a,d){var e=a/b.length,g=Math.abs(c-d);return!f.Match_Distance?g?1:e:e+g/f.Match_Distance}if(b.length>this.Match_MaxBits)throw Error("Pattern too long for this browser.");var e=this.match_alphabet_(b),f=this,g=this.Match_Threshold,h=a.indexOf(b,c);-1!=h&&(g=Math.min(d(0,h),g),h=a.lastIndexOf(b,c+b.length),-1!=h&&(g=Math.min(d(0,h),g)));for(var j=1<<b.length-1,h=-1,i,k,q=b.length+a.length,r,t=0;t<b.length;t++){i=0;for(k=q;i<k;)d(t,c+
+k)<=g?i=k:q=k,k=Math.floor((q-i)/2+i);q=k;i=Math.max(1,c-k+1);var p=Math.min(c+k,a.length)+b.length;k=Array(p+2);for(k[p+1]=(1<<t)-1;p>=i;p--){var w=e[a.charAt(p-1)];k[p]=0===t?(k[p+1]<<1|1)&w:(k[p+1]<<1|1)&w|((r[p+1]|r[p])<<1|1)|r[p+1];if(k[p]&j&&(w=d(t,p-1),w<=g))if(g=w,h=p-1,h>c)i=Math.max(1,2*c-h);else break}if(d(t+1,c)>g)break;r=k}return h};
+diff_match_patch.prototype.match_alphabet_=function(a){for(var b={},c=0;c<a.length;c++)b[a.charAt(c)]=0;for(c=0;c<a.length;c++)b[a.charAt(c)]|=1<<a.length-c-1;return b};
+diff_match_patch.prototype.patch_addContext_=function(a,b){if(0!=b.length){for(var c=b.substring(a.start2,a.start2+a.length1),d=0;b.indexOf(c)!=b.lastIndexOf(c)&&c.length<this.Match_MaxBits-this.Patch_Margin-this.Patch_Margin;)d+=this.Patch_Margin,c=b.substring(a.start2-d,a.start2+a.length1+d);d+=this.Patch_Margin;(c=b.substring(a.start2-d,a.start2))&&a.diffs.unshift([0,c]);(d=b.substring(a.start2+a.length1,a.start2+a.length1+d))&&a.diffs.push([0,d]);a.start1-=c.length;a.start2-=c.length;a.length1+=
+c.length+d.length;a.length2+=c.length+d.length}};
+diff_match_patch.prototype.patch_make=function(a,b,c){var d;if("string"==typeof a&&"string"==typeof b&&"undefined"==typeof c)d=a,b=this.diff_main(d,b,!0),2<b.length&&(this.diff_cleanupSemantic(b),this.diff_cleanupEfficiency(b));else if(a&&"object"==typeof a&&"undefined"==typeof b&&"undefined"==typeof c)b=a,d=this.diff_text1(b);else if("string"==typeof a&&b&&"object"==typeof b&&"undefined"==typeof c)d=a;else if("string"==typeof a&&"string"==typeof b&&c&&"object"==typeof c)d=a,b=c;else throw Error("Unknown call format to patch_make.");
+if(0===b.length)return[];c=[];a=new diff_match_patch.patch_obj;for(var e=0,f=0,g=0,h=d,j=0;j<b.length;j++){var i=b[j][0],k=b[j][1];!e&&0!==i&&(a.start1=f,a.start2=g);switch(i){case 1:a.diffs[e++]=b[j];a.length2+=k.length;d=d.substring(0,g)+k+d.substring(g);break;case -1:a.length1+=k.length;a.diffs[e++]=b[j];d=d.substring(0,g)+d.substring(g+k.length);break;case 0:k.length<=2*this.Patch_Margin&&e&&b.length!=j+1?(a.diffs[e++]=b[j],a.length1+=k.length,a.length2+=k.length):k.length>=2*this.Patch_Margin&&
+e&&(this.patch_addContext_(a,h),c.push(a),a=new diff_match_patch.patch_obj,e=0,h=d,f=g)}1!==i&&(f+=k.length);-1!==i&&(g+=k.length)}e&&(this.patch_addContext_(a,h),c.push(a));return c};diff_match_patch.prototype.patch_deepCopy=function(a){for(var b=[],c=0;c<a.length;c++){var d=a[c],e=new diff_match_patch.patch_obj;e.diffs=[];for(var f=0;f<d.diffs.length;f++)e.diffs[f]=d.diffs[f].slice();e.start1=d.start1;e.start2=d.start2;e.length1=d.length1;e.length2=d.length2;b[c]=e}return b};
+diff_match_patch.prototype.patch_apply=function(a,b){if(0==a.length)return[b,[]];a=this.patch_deepCopy(a);var c=this.patch_addPadding(a);b=c+b+c;this.patch_splitMax(a);for(var d=0,e=[],f=0;f<a.length;f++){var g=a[f].start2+d,h=this.diff_text1(a[f].diffs),j,i=-1;if(h.length>this.Match_MaxBits){if(j=this.match_main(b,h.substring(0,this.Match_MaxBits),g),-1!=j&&(i=this.match_main(b,h.substring(h.length-this.Match_MaxBits),g+h.length-this.Match_MaxBits),-1==i||j>=i))j=-1}else j=this.match_main(b,h,g);
+if(-1==j)e[f]=!1,d-=a[f].length2-a[f].length1;else if(e[f]=!0,d=j-g,g=-1==i?b.substring(j,j+h.length):b.substring(j,i+this.Match_MaxBits),h==g)b=b.substring(0,j)+this.diff_text2(a[f].diffs)+b.substring(j+h.length);else if(g=this.diff_main(h,g,!1),h.length>this.Match_MaxBits&&this.diff_levenshtein(g)/h.length>this.Patch_DeleteThreshold)e[f]=!1;else{this.diff_cleanupSemanticLossless(g);for(var h=0,k,i=0;i<a[f].diffs.length;i++){var q=a[f].diffs[i];0!==q[0]&&(k=this.diff_xIndex(g,h));1===q[0]?b=b.substring(0,
+j+k)+q[1]+b.substring(j+k):-1===q[0]&&(b=b.substring(0,j+k)+b.substring(j+this.diff_xIndex(g,h+q[1].length)));-1!==q[0]&&(h+=q[1].length)}}}b=b.substring(c.length,b.length-c.length);return[b,e]};
+diff_match_patch.prototype.patch_addPadding=function(a){for(var b=this.Patch_Margin,c="",d=1;d<=b;d++)c+=String.fromCharCode(d);for(d=0;d<a.length;d++)a[d].start1+=b,a[d].start2+=b;var d=a[0],e=d.diffs;if(0==e.length||0!=e[0][0])e.unshift([0,c]),d.start1-=b,d.start2-=b,d.length1+=b,d.length2+=b;else if(b>e[0][1].length){var f=b-e[0][1].length;e[0][1]=c.substring(e[0][1].length)+e[0][1];d.start1-=f;d.start2-=f;d.length1+=f;d.length2+=f}d=a[a.length-1];e=d.diffs;0==e.length||0!=e[e.length-1][0]?(e.push([0,
+c]),d.length1+=b,d.length2+=b):b>e[e.length-1][1].length&&(f=b-e[e.length-1][1].length,e[e.length-1][1]+=c.substring(0,f),d.length1+=f,d.length2+=f);return c};
+diff_match_patch.prototype.patch_splitMax=function(a){for(var b=this.Match_MaxBits,c=0;c<a.length;c++)if(!(a[c].length1<=b)){var d=a[c];a.splice(c--,1);for(var e=d.start1,f=d.start2,g="";0!==d.diffs.length;){var h=new diff_match_patch.patch_obj,j=!0;h.start1=e-g.length;h.start2=f-g.length;""!==g&&(h.length1=h.length2=g.length,h.diffs.push([0,g]));for(;0!==d.diffs.length&&h.length1<b-this.Patch_Margin;){var g=d.diffs[0][0],i=d.diffs[0][1];1===g?(h.length2+=i.length,f+=i.length,h.diffs.push(d.diffs.shift()),
+j=!1):-1===g&&1==h.diffs.length&&0==h.diffs[0][0]&&i.length>2*b?(h.length1+=i.length,e+=i.length,j=!1,h.diffs.push([g,i]),d.diffs.shift()):(i=i.substring(0,b-h.length1-this.Patch_Margin),h.length1+=i.length,e+=i.length,0===g?(h.length2+=i.length,f+=i.length):j=!1,h.diffs.push([g,i]),i==d.diffs[0][1]?d.diffs.shift():d.diffs[0][1]=d.diffs[0][1].substring(i.length))}g=this.diff_text2(h.diffs);g=g.substring(g.length-this.Patch_Margin);i=this.diff_text1(d.diffs).substring(0,this.Patch_Margin);""!==i&&
+(h.length1+=i.length,h.length2+=i.length,0!==h.diffs.length&&0===h.diffs[h.diffs.length-1][0]?h.diffs[h.diffs.length-1][1]+=i:h.diffs.push([0,i]));j||a.splice(++c,0,h)}}};diff_match_patch.prototype.patch_toText=function(a){for(var b=[],c=0;c<a.length;c++)b[c]=a[c];return b.join("")};
+diff_match_patch.prototype.patch_fromText=function(a){var b=[];if(!a)return b;a=a.split("\n");for(var c=0,d=/^@@ -(\d+),?(\d*) \+(\d+),?(\d*) @@$/;c<a.length;){var e=a[c].match(d);if(!e)throw Error("Invalid patch string: "+a[c]);var f=new diff_match_patch.patch_obj;b.push(f);f.start1=parseInt(e[1],10);""===e[2]?(f.start1--,f.length1=1):"0"==e[2]?f.length1=0:(f.start1--,f.length1=parseInt(e[2],10));f.start2=parseInt(e[3],10);""===e[4]?(f.start2--,f.length2=1):"0"==e[4]?f.length2=0:(f.start2--,f.length2=
+parseInt(e[4],10));for(c++;c<a.length;){e=a[c].charAt(0);try{var g=decodeURI(a[c].substring(1))}catch(h){throw Error("Illegal escape in patch_fromText: "+g);}if("-"==e)f.diffs.push([-1,g]);else if("+"==e)f.diffs.push([1,g]);else if(" "==e)f.diffs.push([0,g]);else if("@"==e)break;else if(""!==e)throw Error('Invalid patch mode "'+e+'" in: '+g);c++}}return b};diff_match_patch.patch_obj=function(){this.diffs=[];this.start2=this.start1=null;this.length2=this.length1=0};
+diff_match_patch.patch_obj.prototype.toString=function(){var a,b;a=0===this.length1?this.start1+",0":1==this.length1?this.start1+1:this.start1+1+","+this.length1;b=0===this.length2?this.start2+",0":1==this.length2?this.start2+1:this.start2+1+","+this.length2;a=["@@ -"+a+" +"+b+" @@\n"];var c;for(b=0;b<this.diffs.length;b++){switch(this.diffs[b][0]){case 1:c="+";break;case -1:c="-";break;case 0:c=" "}a[b+1]=c+encodeURI(this.diffs[b][1])+"\n"}return a.join("").replace(/%20/g," ")};
+this.diff_match_patch=diff_match_patch;this.DIFF_DELETE=-1;this.DIFF_INSERT=1;this.DIFF_EQUAL=0;})()
+
+/*
+ angular-diff-match-patch
+ http://amweiss.github.io/angular-diff-match-patch/
+ @license: MIT
+*/
+angular.module('diff-match-patch', [])
+	.factory('dmp', ['$window', function dmpFactory($window) {
+		var DiffMatchPatch = $window.diff_match_patch;
+
+		var displayType = {
+			INSDEL: 0,
+			LINEDIFF: 1
+		};
+
+		function diffClass(op) {
+			switch (op) {
+				case DIFF_INSERT:
+					return 'ins';
+				case DIFF_DELETE:
+					return 'del';
+				default: // case DIFF_EQUAL:
+					return 'match';
+			}
+		}
+
+		function diffSymbol(op) {
+			switch (op) {
+				case DIFF_INSERT:
+					return '+';
+				case DIFF_DELETE:
+					return '-';
+				default: // case DIFF_EQUAL:
+					return ' ';
+			}
+		}
+
+		function diffTag(op) {
+			switch (op) {
+				case DIFF_INSERT:
+					return 'ins';
+				case DIFF_DELETE:
+					return 'del';
+				default: // case DIFF_EQUAL:
+					return 'span';
+			}
+		}
+
+		function diffAttrName(op) {
+			switch (op) {
+				case DIFF_INSERT:
+					return 'insert';
+				case DIFF_DELETE:
+					return 'delete';
+				default: // case DIFF_EQUAL:
+					return 'equal';
+			}
+		}
+
+		function isEmptyObject(o) {
+			return Object.getOwnPropertyNames(o).length === 0;
+		}
+
+		function getTagAttrs(options, op, attrs) {
+			var attributes = attrs || {};
+			var tagOptions = {};
+			var attribute;
+			var tagOption;
+			var retVal = [];
+
+			if (angular.isDefined(options) && angular.isDefined(options.attrs)) {
+				tagOptions = angular.copy(options.attrs[diffAttrName(op)] || {});
+			}
+
+			if (isEmptyObject(tagOptions) && isEmptyObject(attributes)) {
+				return '';
+			}
+
+			for (attribute in attributes) {
+				if (angular.isDefined(tagOptions[attribute])) {
+					// The attribute defined in attributes should be first
+					tagOptions[attribute] = attributes[attribute] + ' ' + tagOptions[attribute];
+				} else {
+					tagOptions[attribute] = attributes[attribute];
+				}
+			}
+
+			/* eslint guard-for-in: "off" */
+			for (tagOption in tagOptions) {
+				retVal.push(tagOption + '="' + tagOptions[tagOption] + '"');
+			}
+			return ' ' + retVal.join(' ');
+		}
+
+		function getHtmlPrefix(op, display, options) {
+			switch (display) {
+				case displayType.LINEDIFF:
+					return '<div class="' + diffClass(op) + '"><span' + getTagAttrs(options, op, {class: 'noselect'}) + '>' + diffSymbol(op) + '</span>';
+				default: // case displayType.INSDEL:
+					return '<' + diffTag(op) + getTagAttrs(options, op) + '>';
+			}
+		}
+
+		function getHtmlSuffix(op, display) {
+			switch (display) {
+				case displayType.LINEDIFF:
+					return '</div>';
+				default: // case displayType.INSDEL:
+					return '</' + diffTag(op) + '>';
+			}
+		}
+
+		function createHtmlLines(text, op, options) {
+			var lines = text.split('\n');
+			var y;
+			for (y = 0; y < lines.length; y++) {
+				if (lines[y].length === 0) {
+					continue;
+				}
+				lines[y] = getHtmlPrefix(op, displayType.LINEDIFF, options) + lines[y] + getHtmlSuffix(op, displayType.LINEDIFF);
+			}
+			return lines.join('');
+		}
+
+		function createHtmlFromDiffs(diffs, display, options) {
+			var patternAmp = /&/g;
+			var patternLt = /</g;
+			var patternGt = />/g;
+			var x;
+			var html = [];
+			var y;
+			var data;
+			var op;
+			var text;
+			var diffData = diffs;
+
+			for (x = 0; x < diffData.length; x++) {
+				data = diffData[x][1];
+				diffData[x][1] = data.replace(patternAmp, '&amp;')
+					.replace(patternLt, '&lt;')
+					.replace(patternGt, '&gt;');
+			}
+
+			for (y = 0; y < diffData.length; y++) {
+				op = diffData[y][0];
+				text = diffData[y][1];
+				if (display === displayType.LINEDIFF) {
+					html[y] = createHtmlLines(text, op, options);
+				} else {
+					html[y] = getHtmlPrefix(op, display, options) + text + getHtmlSuffix(op, display);
+				}
+			}
+			return html.join('');
+		}
+
+		function assertArgumentsIsStrings(left, right) {
+			return angular.isString(left) && angular.isString(right);
+		}
+
+		return {
+			createDiffHtml: function createDiffHtml(left, right, options) {
+				var dmp;
+				var diffs;
+				if (assertArgumentsIsStrings(left, right)) {
+					dmp = new DiffMatchPatch();
+					diffs = dmp.diff_main(left, right);
+					return createHtmlFromDiffs(diffs, displayType.INSDEL, options);
+				}
+				return '';
+			},
+
+			createProcessingDiffHtml: function createProcessingDiffHtml(left, right, options) {
+				var dmp;
+				var diffs;
+				if (assertArgumentsIsStrings(left, right)) {
+					dmp = new DiffMatchPatch();
+					diffs = dmp.diff_main(left, right);
+
+					if (angular.isDefined(options) && angular.isDefined(options.editCost) && isFinite(options.editCost)) {
+						dmp.Diff_EditCost = options.editCost; // eslint-disable-line camelcase
+					}
+
+					dmp.diff_cleanupEfficiency(diffs);
+					return createHtmlFromDiffs(diffs, displayType.INSDEL, options);
+				}
+				return '';
+			},
+
+			createSemanticDiffHtml: function createSemanticDiffHtml(left, right, options) {
+				var dmp;
+				var diffs;
+				if (assertArgumentsIsStrings(left, right)) {
+					dmp = new DiffMatchPatch();
+					diffs = dmp.diff_main(left, right);
+					dmp.diff_cleanupSemantic(diffs);
+					return createHtmlFromDiffs(diffs, displayType.INSDEL, options);
+				}
+				return '';
+			},
+
+			createLineDiffHtml: function createLineDiffHtml(left, right, options) {
+				var dmp;
+				var chars;
+				var diffs;
+				if (assertArgumentsIsStrings(left, right)) {
+					dmp = new DiffMatchPatch();
+					chars = dmp.diff_linesToChars_(left, right);
+					diffs = dmp.diff_main(chars.chars1, chars.chars2, false);
+					dmp.diff_charsToLines_(diffs, chars.lineArray);
+					return createHtmlFromDiffs(diffs, displayType.LINEDIFF, options);
+				}
+				return '';
+			}
+		};
+	}])
+	.directive('diff', ['$compile', 'dmp', function factory($compile, dmp) {
+		var ddo = {
+			scope: {
+				left: '=leftObj',
+				right: '=rightObj',
+				options: '=options'
+			},
+			link: function postLink(scope, iElement) {
+				var listener = function listener() {
+					iElement.html(dmp.createDiffHtml(scope.left, scope.right, scope.options));
+					$compile(iElement.contents())(scope);
+				};
+				scope.$watch('left', listener);
+				scope.$watch('right', listener);
+			}
+		};
+		return ddo;
+	}])
+	.directive('processingDiff', ['$compile', 'dmp', function factory($compile, dmp) {
+		var ddo = {
+			scope: {
+				left: '=leftObj',
+				right: '=rightObj',
+				options: '=options'
+			},
+			link: function postLink(scope, iElement) {
+				var listener = function listener() {
+					iElement.html(dmp.createProcessingDiffHtml(scope.left, scope.right, scope.options));
+					$compile(iElement.contents())(scope);
+				};
+				scope.$watch('left', listener);
+				scope.$watch('right', listener);
+				scope.$watch('options.editCost', listener, true);
+			}
+		};
+		return ddo;
+	}])
+	.directive('semanticDiff', ['$compile', 'dmp', function factory($compile, dmp) {
+		var ddo = {
+			scope: {
+				left: '=leftObj',
+				right: '=rightObj',
+				options: '=options'
+			},
+			link: function postLink(scope, iElement) {
+				var listener = function listener() {
+					iElement.html(dmp.createSemanticDiffHtml(scope.left, scope.right, scope.options));
+					$compile(iElement.contents())(scope);
+				};
+				scope.$watch('left', listener);
+				scope.$watch('right', listener);
+			}
+		};
+		return ddo;
+	}])
+	.directive('lineDiff', ['$compile', 'dmp', function factory($compile, dmp) {
+		var ddo = {
+			scope: {
+				left: '=leftObj',
+				right: '=rightObj',
+				options: '=options'
+			},
+			link: function postLink(scope, iElement) {
+				var listener = function listener() {
+					iElement.html(dmp.createLineDiffHtml(scope.left, scope.right, scope.options));
+					$compile(iElement.contents())(scope);
+				};
+				scope.$watch('left', listener);
+				scope.$watch('right', listener);
+			}
+		};
+		return ddo;
+	}]);
+
 angular.module("templates", []).run(["$templateCache", function($templateCache) {$templateCache.put("modules/dossier/cal.html","<!DOCTYPE html>\n<html>\n<head>\n</head>\n<body>\n\n\n<script>\nmoment.monthsShort()\n\n</script>\n</body>\n</html>\n");
-$templateCache.put("modules/dossier/index.html","<div>\n<h1>{{dossier.procedure.title}}</h1>\n\nFinal: <a ng-href=\"{{dossier.procedure.final.url}}\">{{dossier.procedure.final.title}}</a>\n<h3>Committees</h3>\n<hr/>\n<ul>\n<li ng-repeat=\"item in dossier.committees\" ng-style=\"!item.responsible && {\'color\':\'gray\'}\">\n<b>{{item.committee}}</b>\n{{item.committee_full}}\n(<span ng-repeat=\"rapporteur in item.rapporteur\">{{rapporteur.name}}, </span>\n<span ng-repeat=\"shadow in item.shadow\">{{shadow.name}} </span>)\n</li>\n</ul>\n\n<div ng-repeat=\"\">\n</div>\n\n<h2>Changes</h2>\n<ul>\n<li ng-repeat=\"(key,value) in dossier.changes\">\n{{key|date:\'dd. MMM yyyy\'}}\n</li>\n</ul>\n\n<h2>Activities</h2>\n<div ng-repeat=\"activity in dossier.activities\">\n<h3>{{activity.type}}</h3>\n<a ng-repeat=\"doc in activity.docs\" ng-href=\"{{doc.url}}\">\n      <md-button md-no-ink class=\"md-primary\">{{doc.title}}</md-button>\n</a>\n</div>\n<h2>Votings</h2>\n\n<div ng-repeat=\"voting in votings.data\" layout=\"row\" tyle=\"width:600px\">\n<span class=\"flex-10\" style=\"color:green\"> 👍{{voting.For.total}}</span>\n<span class=\"flex-10\"  style=\"color:red\">👎{{voting.Against.total}}</span>\n<span class=\"flex-70\" ui-sref=\"votesget({voteid:voting.voteid})\"  > {{voting.title}}</span>\n<span class=\"flex-10\"  >\n{{voting.voteid}}\n\n</div>\n<br/>\n<br/>\n<br/>\n<br/>\n\n<hr/>\n<pre>\n\n<json-formatter json=\"votings\" open=\"1\"></json-formatter>\n</pre>\n</div>\n");
+$templateCache.put("modules/dossier/index.html","<div>\n<h1>{{dossier.procedure.title}}</h1>\n<h4>{{dossier.procedure.stage_reached}}</h4>\n<p>{{dossier.procedure.reference}}</p>\n<a href=\"http://localhost:3030/api/amendments?reference={{dossier.procedure.reference}}\" target=\"amendment\">\nhttp://localhost:3030/api/amendments?reference={{dossier.procedure.reference}}\n</a>\n<br/>\nFinal: <a ng-href=\"{{dossier.procedure.final.url}}\">{{dossier.procedure.final.title}}</a>\n<h3>Committees</h3>\n<hr/>\n<ul>\n<li ng-repeat=\"item in dossier.committees\" ng-style=\"!item.responsible && {\'color\':\'gray\'}\">\n<b>{{item.committee}}</b>\n{{item.committee_full}}\n(<span ng-repeat=\"rapporteur in item.rapporteur\">{{rapporteur.name}}, </span>\n<span ng-repeat=\"shadow in item.shadow\">{{shadow.name}} </span>)\n</li>\n</ul>\n\n<div ng-repeat=\"\">\n</div>\n\n<h2>Changes</h2>\n<ul>\n<li ng-repeat=\"(key,value) in dossier.changes\">\n{{key|date:\'dd. MMM yyyy\'}}\n</li>\n</ul>\n\n<h2>Activities</h2>\n<div ng-repeat=\"activity in dossier.activities\">\n<h3>{{activity.type}}</h3>\n<a ng-repeat=\"doc in activity.docs\" ng-href=\"{{doc.url}}\">\n      <md-button md-no-ink class=\"md-primary\">{{doc.title}}</md-button>\n</a>\n</div>\n<h2>Votings</h2>\n\n<div ng-repeat=\"voting in votings.data\" layout=\"row\" tyle=\"width:600px\" class=\"{{voting.result}}\">\n<span class=\"flex-10\" style=\"color:green\"> 👍{{voting.For.total}}</span>\n<span class=\"flex-10\"  style=\"color:red\">👎{{voting.Against.total}}</span>\n<span class=\"flex-70\" ui-sref=\"votesget({voteid:voting.voteid})\"  > {{voting.title}}</span>\n<span class=\"flex-10\"  >\n{{voting.voteid}}\n\n</div>\n<br/>\n<br/>\n<br/>\n<br/>\n\n<hr/>\n<pre>\n\n<json-formatter json=\"votings\" open=\"1\"></json-formatter>\n</pre>\n</div>\n");
 $templateCache.put("modules/dossier/list.html","<md-content>\n<md-list  ng-cloak>\n  <md-subheader class=\"md-no-sticky\">Dossiers</md-subheader>\n  <div infinite-scroll=\'loadMore()\' infinite-scroll-distance=\'2\'>\n\n  <md-list-item ng-repeat=\"item in dossiers.data track by $index\" ui-sref=\"dossierget({dossierid:item._id})\">\n        <div class=\"md-list-item-text\">\n          <h3 style=\"argin-bottom:0\">{{ item.procedure.title }}</h3>\n	<span ng-repeat=\"committee in item.committees\" ng-if=\"committee.rapporteur\">{{committee.rapporteur[0].name}}, </span>\n	  <p ng-repeat=\"subject in item.procedure.subject\" style=\"margin-top:0\">\n	  {{subject}}\n	  </p>\n	</div>\n  </md-list-item>\n  </div>\n</md-list>\n</md-content>\n<!--\n<div ng-repeat=\"item in dossiers.data\">\n{{item.procedure.title}}\n<div ng-repeat=\"subject in item.procedure.subject\">\n{{subject}}\n</div>\n-->\n\n</div>\n");
-$templateCache.put("modules/mep/index.html","<div class=\"mep\">\n<!--\n<md-progress-linear ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n-->\n<h2>\n<img ng-src=\"{{::mep.Photo}}\" class=\"namephoto\"/><!-- 170x215-->\n{{::mep.Name.full}}</h2>\n  <md-content>\n\n    <md-tabs  md-dynamic-height md-border-bottom>\n      <md-tab \n	ng-repeat=\"type in [\'Personal\',\'Timeline\',\'Calendar\',\'Votings\']\" \n	label=\"{{type}}\"\n	ng-click=\"onTabSelected(type)\"\n	md-active=\"type==category\"\n	></md-tab>\n   </md-tab>\n\n  </md-content>\n<div ng-if=\"category==\'Personal\'\">\n<table>\n<tr>\n<td>\n<img ng-src=\"{{::mep.Photo}}\" style=\"float:left;margin:2px;\"/><!-- 170x215-->\n\n</td>\n<td>\n\n\n<div class=\"sozialbuttons\">\n<table class=\"meptabs\">\n<tr><td>born</td><td>{{::mep.Birth.date|date:\'dd. MMMM yyyy\'}}, {{::mep.Birth.place}}</td></tr>\n<tr><td>country</td><td> {{::mep.Constituencies[0].country}}</td></tr>\n<tr><td>party</td><td> {{::mep.Constituencies[0].party}}</td></tr>\n<tr><td>{{::mep.Groups[0].groupid}}</td><td> {{::mep.Groups[0].Organization}}</td></tr>\n<tr><td>role</td><td> {{::mep.Groups[0].role}}</td></tr>\n<tr ng-repeat=\"mail in mep.Mail\"><td><a  href=\"mailto:{{::mail}}\" title=\"{{::mail}}\"><img src=\"icons/email.jpg\"/></a></td><td>{{::mail}}</td></tr>\n<tr ng-repeat=\"site in mep.Homepage\"><td><a ng-href=\"{{::site}}\" title=\"{{::site}}\"><img src=\"icons/www.jpg\"/></a></td><td>{{::site}}</td></tr>\n<tr ng-repeat=\"site in mep.Facebook\"><td><a ng-href=\"{{::site}}\" title=\"Facebook\"><img src=\"icons/facebook.jpg\"/></a></td><td>{{::site}}</td></tr>\n<tr ng-repeat=\"site in mep.Twitter\"><td><a ng-href=\"{{::site}}\" title=\"Twitter\"><img src=\"icons/twitter.jpg\"/></a></td><td>{{::site}}</td></tr>\n\n</table>\n</div>\n</td>\n</tr>\n</table>\n\n\n\n    <md-tabs md-dynamic-height md-border-bottom>\n\n<md-tab ng-repeat=\"(name,address) in mep.Addresses\" label=\"{{name}}\">\n<br/>\n	<table class=\"meptabs\">\n	<tr ng-if=\"address.Phone\"><td>Phone</td><td>{{address.Phone}}</td></tr>\n	<tr ng-if=\"address.Fax\"><td>Fax</td><td>{{address.Fax}}</td></tr>\n\n	<tr ng-repeat=\"(key,value) in address.Address\">\n		<td tyle=\"color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px\">{{key}} </td><td> {{value}}</td>\n	</tr>\n	</table>\n<!--\n	<div ng-if=\"name==\'Postal2\'\" ng-repeat=\"addressLine in mep.Addresses[\'Postal\']\"]>{{addressLine}}</div>\n-->\n</md-tab>\n</md-tabs>\n\n<div>{{::mep.CV[0]}}</div>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n</div>\n\n\n<timeline ng-if=\"category==\'Timeline\'\" mep=\"mep\" onselect=\"select(day)\"></timeline>\n<cal ng-if=\"category==\'Calendar\'\" mep=\"mep\" onselect=\"select(day)\"></cal>\n</div>\n\n\n\n</div>\n\n");
-$templateCache.put("modules/mep/list.html","<div style=\"position:fixed;bottom:0px;left:0px;width:100%;z-index:1000\">\n    <md-progress-linear ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n</div>\n<div layout=\"row\">\n\n    <md-input-container style=\"margin-right: 10px;\">\n\n        <md-select ng-model=\"selectedCountry\" placeholder=\"select country\">\n            <md-option ng-repeat=\"(key,value) in countries\" value=\"{{key}}\">\n                {{key}}\n            </md-option>\n        </md-select>\n    </md-input-container>\n    <md-input-container style=\"margin-right: 10px;\">\n        <md-select ng-model=\"selectedParty\" placeholder=\"select party\">\n            <md-option ng-repeat=\"(key,value) in parties \" value=\"{{key}}\">\n                {{key}}\n            </md-option>\n        </md-select>\n    </md-input-container>\n    <md-input-container style=\"margin-right: 10px;\">\n        <label>Search by name</label>\n        <input>\n    </md-input-container>\n    <md-input-container>\n        <md-button class=\"md-raised md-link\" ng-click=\"selectedCountry=undefined;selectedParty=undefined\">all</md-button>\n    </md-input-container>\n</div>\n\n<md-container>\n    <div style=\"width:100%\" layout=\"row\" layout-wrap flex infinite-scroll=\'loadMore()\' infinite-scroll-distance=\'0\'>\n        <md-card ng-repeat=\"mep in meps.data \" ui-sref=\"mepsget.category({userid:mep.UserID,category:\'Personal\'})\" style=\"min-width:400px;padding:10px\">\n            <div layout=\"row\" layout-wrap>\n                <div flex=\"10\">\n                    <div class=\"icon-{{::mep.UserID}}\" title=\"{{::mep.Name.full}}\"></div>\n                    <img ng-if=\"refresh\" class=\"md-avatar\" alt=\"{{::mep.Name.full}}\" ng-src=\"/proxy/{{::mep.UserID}}\" />\n                </div>\n                <div flex>\n                    <h3 style=\"margin-top:0px\">{{::mep.Name.full}}</h3>\n                    <p> {{::mep.Birth.date | date:\'dd. MMM yyyy\'}}, {{::mep.Birth.place}}</p>\n                </div>\n                <div flex=\"10\">\n                    <img ng-if=\"::mep.Groups[0].country\" ng-src=\"{{::mep.Groups[0].country|flag}}\" style=\"width:20px\" title=\"{{::mep.Groups[0].country}}\" />\n                </div>\n\n\n            </div>\n        </md-card>\n    </div>\n</md-container>\n");
+$templateCache.put("modules/mep/index.html","<div class=\"mep\">\n\n<!--\n<md-progress-linear ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n-->\n<h2>\n<img ng-src=\"{{::mep.Photo}}\" class=\"namephoto\"/><!-- 170x215-->\n{{::mep.Name.full}}</h2>\n  <md-content>\n\n    <md-tabs  md-dynamic-height md-border-bottom>\n      <md-tab \n	ng-repeat=\"type in [\'Personal\',\'Timeline\',\'Calendar\',\'Votings\',\'Amendments\']\" \n	label=\"{{type}}\"\n	ng-click=\"onTabSelected(type)\"\n	md-active=\"type==category\"\n	></md-tab>\n   </md-tab>\n\n  </md-content>\n<div ng-if=\"category==\'Personal\'\">\n<table>\n<tr>\n<td>\n<img ng-src=\"{{::mep.Photo}}\" style=\"float:left;margin:2px;\"/><!-- 170x215-->\n\n</td>\n<td>\n\n\n<div class=\"sozialbuttons\">\n<table class=\"meptabs\">\n<tr><td>born</td><td>{{::mep.Birth.date|date:\'dd. MMMM yyyy\'}}, {{::mep.Birth.place}}</td></tr>\n<tr><td>country</td><td> {{::mep.Constituencies[0].country}}</td></tr>\n<tr><td>party</td><td> {{::mep.Constituencies[0].party}}</td></tr>\n<tr><td>{{::mep.Groups[0].groupid}}</td><td> {{::mep.Groups[0].Organization}}</td></tr>\n<tr><td>role</td><td> {{::mep.Groups[0].role}}</td></tr>\n<tr ng-repeat=\"mail in mep.Mail\"><td><a  href=\"mailto:{{::mail}}\" title=\"{{::mail}}\"><img src=\"icons/email.jpg\"/></a></td><td>{{::mail}}</td></tr>\n<tr ng-repeat=\"site in mep.Homepage\"><td><a ng-href=\"{{::site}}\" title=\"{{::site}}\"><img src=\"icons/www.jpg\"/></a></td><td>{{::site}}</td></tr>\n<tr ng-repeat=\"site in mep.Facebook\"><td><a ng-href=\"{{::site}}\" title=\"Facebook\"><img src=\"icons/facebook.jpg\"/></a></td><td>{{::site}}</td></tr>\n<tr ng-repeat=\"site in mep.Twitter\"><td><a ng-href=\"{{::site}}\" title=\"Twitter\"><img src=\"icons/twitter.jpg\"/></a></td><td>{{::site}}</td></tr>\n\n</table>\n</div>\n</td>\n</tr>\n</table>\n\n\n\n    <md-tabs md-dynamic-height md-border-bottom>\n\n<md-tab ng-repeat=\"(name,address) in mep.Addresses\" label=\"{{name}}\">\n<br/>\n	<table class=\"meptabs\">\n	<tr ng-if=\"address.Phone\"><td>Phone</td><td>{{address.Phone}}</td></tr>\n	<tr ng-if=\"address.Fax\"><td>Fax</td><td>{{address.Fax}}</td></tr>\n\n	<tr ng-repeat=\"(key,value) in address.Address\">\n		<td tyle=\"color:grey;text-align:right;border-right:1px solid #c0c0c0;font-weight:500;opacity:0.5;padding:4px\">{{key}} </td><td> {{value}}</td>\n	</tr>\n	</table>\n<!--\n	<div ng-if=\"name==\'Postal2\'\" ng-repeat=\"addressLine in mep.Addresses[\'Postal\']\"]>{{addressLine}}</div>\n-->\n</md-tab>\n</md-tabs>\n\n<div>{{::mep.CV[0]}}</div>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n<br/> <br/> <br/> <br/>\n</div>\n\n\n<timeline ng-if=\"category==\'Timeline\'\" mep=\"mep\" onselect=\"select(day)\"></timeline>\n<cal ng-if=\"category==\'Calendar\'\" mep=\"mep\" onselect=\"select(day)\"></cal>\n\n\n<div ng-if=\"category==\'Votings\'\" ng-repeat=\"(title,vote) in votings\"><h4>{{vote[0].ts|date:\'dd. MMMM yyyy\'}} {{title}}</h4>\n<div ng-repeat=\"item in vote|orderBy:\'ts\'\"style=\"margin-left:40px\" class=\"{{item.vote}}\">{{item.title}} </div>\n </div>\n<div ng-if=\"loadingAmendment\">loading...</div>\n<div ng-if=\"category==\'Amendments\'\" ng-repeat=\"amendment in amendments\">\n  <md-content>\n	<h4>{{amendment.date|date:\'dd. MMMM yyyy\'}} {{title}}\n	<span ng-repeat=\"committee in amendment.committee\">{{committee}}</span>\n	</h4>\n\n	<a ng-href=\"{{amendment.src}}\" target=\"_blank\"><p class=\"md-body-1\">{{amendment.reference}} {{amendment.seq}}</p></a>\n	<div ng-repeat=\"mep in amendment.meps\" class=\"avatar icon-{{::mep}}\" title=\"{{::mep}}\"></div>\n	<div class=\"textdiff\" semantic-diff right-obj=\"amendment.newtext\" left-obj=\"amendment.oldtext\"></div>\n\n  </md-content>\n</div>\n\n</div>\n\n\n\n</div>\n\n");
+$templateCache.put("modules/mep/list.html","<div style=\"position:fixed;bottom:0px;left:0px;width:100%;z-index:1000\">\n    <md-progress-linear ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n</div>\n<div layout=\"row\">\n\n    <md-input-container style=\"margin-right: 10px;\">\n\n        <md-select ng-model=\"selectedCountry\" placeholder=\"select country\">\n            <md-option ng-repeat=\"(key,value) in countries\" value=\"{{key}}\">\n                {{key}}\n            </md-option>\n        </md-select>\n    </md-input-container>\n    <md-input-container style=\"margin-right: 10px;\">\n		<md-select ng-model=\"selectedParty\" placeholder=\"select party\">\n		    <md-option ng-repeat=\"(key,value) in parties \" value=\"{{key}}\">\n			{{key}}\n		    </md-option>\n		</md-select>\n    </md-input-container>\n    <md-input-container style=\"margin-right: 10px;\">\n		<label>Search by name</label>\n		<input>\n    </md-input-container>\n    <md-input-container>\n		<md-button class=\"md-raised md-link\" ng-click=\"selectedCountry=undefined;selectedParty=undefined\">all</md-button>\n    </md-input-container>\n</div>\n\n	<md-container>\n    <div style=\"width:100%\" layout=\"row\" layout-wrap flex infinite-scroll=\'loadMore()\' infinite-scroll-distance=\'0\'>\n        <md-card ng-repeat=\"mep in meps.data \" ui-sref=\"mepsget.category({userid:mep.UserID,category:\'Personal\'})\" style=\"min-width:400px;padding:10px\">\n            <div layout=\"row\" layout-wrap>\n                <div flex=\"10\">\n                    <div class=\"icon-{{::mep.UserID}}\" title=\"{{::mep.Name.full}}\"></div>\n                    <img ng-if=\"refresh\" class=\"md-avatar\" alt=\"{{::mep.Name.full}}\" ng-src=\"/proxy/{{::mep.UserID}}\" />\n                </div>\n                <div flex>\n                    <h3 style=\"margin-top:0px\">{{::mep.Name.full}}</h3>\n                    <p> {{::mep.Birth.date | date:\'dd. MMM yyyy\'}}, {{::mep.Birth.place}}</p>\n                </div>\n                <div flex=\"10\">\n                    <img ng-if=\"::mep.Groups[0].country\" ng-src=\"{{::mep.Groups[0].country|flag}}\" style=\"width:20px\" title=\"{{::mep.Groups[0].country}}\" />\n                </div>\n\n\n            </div>\n        </md-card>\n    </div>\n</md-container>\n");
 $templateCache.put("modules/vote/index.html","<div>\n<md-progress-linear ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n\n<object type=\"image/svg+xml\" data=\"icons/ep.svg\" \n	width=\"364\" height=\"264\" border=\"0\"></object>\n    <div ui-sref=\"dossierget({dossierid:voteresult.dossierid})\">\n        <h1>{{voteresult.title}}</h1>\n        <p>{{voteresult.eptitle}}</p>\n        <p>{{voteresult.ts|date:\'dd. MMMM yyyy\'}}</p>\n    </div>\n\n    <div ng-repeat=\"type in [\'For\',\'Against\',\'Abstain\']\">\n        <h1 ng-click=\"open=!open\">{{type}} {{voteresult[type].total}}</h1>\n<md-tabs md-dynamic-height md-border-bottom >\n      <md-tab label=\"{{party.group}}\" ng-repeat=\"party in voteresult[type].groups\" md-on-select=\"selectParty(party)\">\n\n      </md-tab>\n</md-tabs>\n        <md-card g-repeat=\"group in voteresult[type].groups\">\n	  <md-content class=\"md-padding autocomplete\" layout=\"column\" ng-class=\"type\">\n\n                <md-card-title>\n                    <md-card-title-text >\n                        <span class=\"md-headline\">{{group.group}} {{group.votes.length}}</span>\n                    </md-card-title-text>\n                </md-card-title>\n\n                <div class=\"md-media-lg card-media\">\n    <md-contact-chips\n        ng-model=\"ctrl.contacts\"\n        md-contacts=\"ctrl.querySearch($query)\"\n        md-contact-name=\"name\"\n        md-contact-image=\"image\"\n        md-contact-email=\"email\"\n        md-require-match=\"true\"\n        md-highlight-flags=\"i\"\n        filter-selected=\"ctrl.filterSelected\"\n        placeholder=\"To\">\n    </md-contact-chips>\n                    <md-list class=\"fixedRows\">\n                        <md-list-item class=\"md-2-line contact-item\" ng-repeat=\"vote in group.votes\" style=\"display:inline-block;in-width:160px\" ui-sref=\"mepsget({\'userid\':vote.ep_id})\">\n<!--\n                            <img ng-src=\"http://www.europarl.europa.eu/mepphoto/{{vote.ep_id}}.jpg\" class=\"md-avatar\" alt=\"{{vote.userid}}\"  />\n-->\n                    <div class=\"icon-{{::vote.ep_id}}\" title=\"{{::mep.Name.full}}\"></div>\n\n                            <div class=\"md-list-item-text compact\">\n                                <h3>{{vote.name}}</h3>\n                            </div>\n                        </md-list-item>\n                    </md-list>\n                </div>\n            </div>\n	</md-content>\n    </md-card>\n</div>\n<!--\n	<div>\n	<div ng-repeat=\"for in voteresult[type]\">\n	<div ng-repeat=\"group in for track by $index\">\n	<h2>{{group.group}}</h2>\n	<span ng-repeat=\"vote in group.votes\" ui-sref=\"mepsget({\'userid\':vote.userid})\">\n	<img style=\"height:30px;\" ng-src=\"http://www.europarl.europa.eu/mepphoto/{{vote.userid}}.jpg\"/>\n	{{vote.name}}\n	</span>\n	</div>\n	</div>\n	<hr/>\n	</div>\n-->\n</div>\n");
-$templateCache.put("modules/vote/list.html","<div style=\"position:relative\">\n<md-progress-linear style=\"position:absolute\" ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n</div>\n<md-content>\n<input ng-model=\"searchstring\" ng-keypress=\"($event.which === 13)?search():0\"/><md-button ng-click=\"search()\">seach</md-button>\n<md-list  ng-cloak>\n  <md-subheader class=\"md-no-sticky\">Votings</md-subheader>\n  <div infinite-scroll=\'loadMore()\' infinite-scroll-distance=\'2\'>\n\n<div ng-repeat=\"report in reports\">\n<md-card>\n     <md-card-title>\n          <md-card-title-text>\n            <span class=\"md-headline\">{{report.items[0].ts|date:\"dd. MMM yyyy\"}}<b> {{report.items[0].eptitle}}</b></span>\n            <span class=\"md-subhead\">{{report.title}}</span>\n		<md-button ui-sref=\"dossierget({dossierid:report.items[0].dossierid})\">dossier</md-button>\n          </md-card-title-text>\n          <md-card-title-media>\n            <div class=\"md-media-lg card-media\">\n	<img ng-repeat=\"rapporteur in report.items[0].rapporteur\" ui-sref=\"mepsget({\'userid\':rapporteur.ref})\"\nng-src=\"http://www.europarl.europa.eu/mepphoto/{{rapporteur.ref}}.jpg\" style=\"height:140px;width:120px;\"/>\n		</div>\n          </md-card-title-media>\n        </md-card-title>\n        <md-card-content>\n\n\n	<div ayout=\"row\" tyle=\"max-width:1000px\">\n	\n	<div lex=\"33\" ng-style=\"item.passed==true ? {\'background-color\':\'rgba(0,255,0,0.1)\'}:{\'background-color\':\'rgba(255,0,0,0.1)\'}\" style=\"min-width:300px;border:0px solid black;margin:15px;display:inline-block\"  ng-repeat=\"item in report.items| orderBy:\'ts\':false\" ui-sref=\"votesget({voteid:item.voteid})\" title=\"{{item.ts|date:\'HH:mm:ss\'}}\">\n	<div style=\"position:relative\">\n		<div style=\"position:absolute;right:5px;top:11px\">\n			<span style=\"color:green\">{{item.For.total}}</span>\n			<span style=\"color:red\">{{item.Against.total}}</span>\n			<span style=\"color:grey\">{{item.Abstain.total}}</span>\n		</div>\n		<div >\n		<div class=\"resultbar For\" style=\"left:0;width:{{item.For.percent }}%;\"></div>\n		<div class=\"resultbar Against\" style=\"left:{{item.For.percent}}%;width:{{item.Against.percent}}%;\"></div>\n		<div class=\"resultbar Abstain\" style=\"left:{{0+item.For.percent + item.Against.percent}}%;width:{{item.Abstain.percent}}%;\"></div>\n		</div>\n<div class=\"title\">{{item.subtitle}}</div>\n	</div>\n	</div>\n	<br/>\n	<br/>\n        </md-card-content>\n</md-card>\n<br/>\n<br/>\n</div>\n</div>\n<!--\n  <md-list-item ng-repeat=\"item in list.data\" ui-sref=\"votesget({voteid:item.voteid})\">\n        <div class=\"md-list-item-text\">\n          <h3 style=\"argin-bottom:0\">{{ item.title }}</h3>\n          <p style=\"margin-top:0\">\n          <i>{{item.ts|date:\"dd. MMM yyyy\"}}</i> {{item.eptitle}}\n          </p>\n        </div>\n  </md-list-item>\n</md-list>\n-->\n</md-content>\n\n");}]);
+$templateCache.put("modules/vote/list.html","<div style=\"position:relative\">\n<md-progress-linear style=\"position:absolute\" ng-if=\"loading\" md-mode=\"indeterminate\"></md-progress-linear>\n</div>\n<md-content>\n<input ng-model=\"searchstring\" ng-keypress=\"($event.which === 13)?search():0\"/><md-button ng-click=\"search()\">seach</md-button>\n<md-list  ng-cloak>\n  <md-subheader class=\"md-no-sticky\">Votings</md-subheader>\n  <div infinite-scroll=\'loadMore()\' infinite-scroll-distance=\'2\'>\n\n<div ng-repeat=\"report in reports\">\n<md-card>\n     <md-card-title>\n          <md-card-title-text>\n            <span class=\"md-headline\">{{report.items[0].ts|date:\"dd. MMM yyyy\"}}<b> {{report.items[0].eptitle}}</b></span>\n            <span class=\"md-subhead\">{{report.title}}</span>\n		<md-button ui-sref=\"dossierget({dossierid:report.items[0].dossierid})\">dossier</md-button>\n          </md-card-title-text>\n          <md-card-title-media>\n            <div class=\"md-media-lg card-media\">\n	<img ng-repeat=\"rapporteur in report.items[0].rapporteur\" ui-sref=\"mepsget({\'userid\':rapporteur.ref})\"\nng-src=\"http://www.europarl.europa.eu/mepphoto/{{rapporteur.ref}}.jpg\" style=\"height:140px;width:120px;\"/>\n		</div>\n          </md-card-title-media>\n        </md-card-title>\n        <md-card-content>\n\n\n	<div ayout=\"row\" tyle=\"max-width:1000px\">\n	\n	<div lex=\"33\" ng-style=\"item.passed==true ? {\'background-color\':\'rgba(0,255,0,0.1)\'}:{\'background-color\':\'rgba(255,0,0,0.1)\'}\" style=\"min-width:300px;border:0px solid black;margin:15px;display:inline-block\"  ng-repeat=\"item in report.items| orderBy:\'ts\':false\" ui-sref=\"votesget({voteid:item.voteid})\" title=\"{{item.ts|date:\'HH:mm:ss\'}}\">\n	<div style=\"position:relative\">\n		<div style=\"position:absolute;right:5px;top:11px\">\n			<span style=\"color:green\">{{::item.For.total}}</span>\n			<span style=\"color:red\">{{::item.Against.total}}</span>\n			<span style=\"color:grey\">{{::item.Abstain.total}}</span>\n		</div>\n		<div >\n		<div class=\"resultbar For\" style=\"left:0;width:{{::item.For.percent }}%;\"></div>\n		<div class=\"resultbar Against\" style=\"left:{{item.For.percent}}%;width:{{item.Against.percent}}%;\"></div>\n		<div class=\"resultbar Abstain\" style=\"left:{{0+item.For.percent + item.Against.percent}}%;width:{{item.Abstain.percent}}%;\"></div>\n		</div>\n<div class=\"title\">{{item.subtitle}}</div>\n	</div>\n	</div>\n	<br/>\n	<br/>\n        </md-card-content>\n</md-card>\n<br/>\n<br/>\n</div>\n</div>\n<!--\n  <md-list-item ng-repeat=\"item in list.data\" ui-sref=\"votesget({voteid:item.voteid})\">\n        <div class=\"md-list-item-text\">\n          <h3 style=\"argin-bottom:0\">{{ item.title }}</h3>\n          <p style=\"margin-top:0\">\n          <i>{{item.ts|date:\"dd. MMM yyyy\"}}</i> {{item.eptitle}}\n          </p>\n        </div>\n  </md-list-item>\n</md-list>\n-->\n</md-content>\n\n");}]);
 var MEPS;
 var countries=[];
-angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','vote','cal','timeline','jsonFormatter','infinite-scroll','templates'])
+angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','vote','cal','timeline','jsonFormatter','infinite-scroll','templates', 'diff-match-patch'])
 
 .value('countries', {
 	"Germany":"de", 

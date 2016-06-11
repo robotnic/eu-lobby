@@ -10,7 +10,7 @@ angular.module('vote', [])
 .controller("votescontroller", function($scope,$http,$stateParams){
         console.log("votescontroller meldet sich zum dienst");
 	var skip=0;
-	var limit=25;
+	var limit=10;
 	var search="";
 	$scope.search=function(){
 		console.log($scope.searchstring);
@@ -31,6 +31,7 @@ angular.module('vote', [])
 	load();
 
 	function load(keepdata){
+		console.log("LIMIT",limit,skip);
 		$scope.loading=true;
 		var sort=JSON.stringify({UserId:1});
 		$http.get("/api/votes?$skip="+skip+"&$limit="+limit+"&$sort[ts]=-1&$select[]=report&$select[]=title&$select[]=eptitle&$select[]=ts&$select[]=voteid&$select[]=For.total&$select[]=Against.total&$select[]=Abstain.total&$select[]=rapporteur&$select[]=dossierid"+search,{cache:true})

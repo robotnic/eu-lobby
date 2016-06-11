@@ -20,7 +20,7 @@ export default function(){
 
   let mepsHook = function(options) {
     return function(hook) {
-      console.log('My custom hook ran!',hook.id);
+      console.log('My custom meps ran!',hook.id);
 	hook.id=parseInt(hook.id);
     }
   }

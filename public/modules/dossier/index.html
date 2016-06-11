@@ -1,6 +1,11 @@
 <div>
 <h1>{{dossier.procedure.title}}</h1>
-
+<h4>{{dossier.procedure.stage_reached}}</h4>
+<p>{{dossier.procedure.reference}}</p>
+<a href="http://localhost:3030/api/amendments?reference={{dossier.procedure.reference}}" target="amendment">
+http://localhost:3030/api/amendments?reference={{dossier.procedure.reference}}
+</a>
+<br/>
 Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.title}}</a>
 <h3>Committees</h3>
 <hr/>
@@ -32,7 +37,7 @@ Final: <a ng-href="{{dossier.procedure.final.url}}">{{dossier.procedure.final.ti
 </div>
 <h2>Votings</h2>
 
-<div ng-repeat="voting in votings.data" layout="row" tyle="width:600px">
+<div ng-repeat="voting in votings.data" layout="row" tyle="width:600px" class="{{voting.result}}">
 <span class="flex-10" style="color:green"> 👍{{voting.For.total}}</span>
 <span class="flex-10"  style="color:red">👎{{voting.Against.total}}</span>
 <span class="flex-70" ui-sref="votesget({voteid:voting.voteid})"  > {{voting.title}}</span>

@@ -1,6 +1,6 @@
 var MEPS;
 var countries=[];
-angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','vote','cal','timeline','jsonFormatter','infinite-scroll','templates'])
+angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","dossier",'mep','vote','cal','timeline','jsonFormatter','infinite-scroll','templates', 'diff-match-patch'])
 
 .value('countries', {
 	"Germany":"de", 

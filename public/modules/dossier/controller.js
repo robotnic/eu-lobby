@@ -36,12 +36,20 @@ angular.module('dossier', [])
 	$http.get("/api/dossiers/"+$stateParams.dossierid).then(function(response){
 		console.log("r",response.data);
 		$scope.dossier=response.data;
+		console.log("HAB DI REF",$scope.dossier.procedure.reference);
+		//$http.get("/api/votes?dossierid="+$stateParams.dossierid).then(function(response){
+		$http.get("/api/votes?epref="+$scope.dossier.procedure.reference).then(function(response){
+			$scope.votings=response.data
+			for(var i=0;i<$scope.votings.data.length;i++){
+				if(parseInt($scope.votings.data[i].For.total) > parseInt($scope.votings.data[i].Against.total)){
+					$scope.votings.data[i].result="For";
+				}else{
+					$scope.votings.data[i].result="Against";
+				}
+			}
+		});
 	},function(error){
 		console.log(error);
-	});
-	$http.get("/api/votes/?dossierid="+$stateParams.dossierid).then(function(response){
-		console.log(response.data);
-		$scope.votings=response.data
 	});
 })
 console.log("passt");
