@@ -31,6 +31,7 @@ mongoimport --upsert --db eulobby --collection amendments --file data/amendments
 use eulobby
 db.dossiers.find().forEach(function(doc){doc.id=doc._id;db.dossiers.save(doc)})
 db.ep_amendments.find().forEach(function(doc){doc.id=doc._id;db.ep_amendments.save(doc)})
+//https://github.com/feathersjs/feathers-mongoose/issues/89
 
 ```
 create index to speed up queries

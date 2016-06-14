@@ -89,7 +89,7 @@
 	</h4>
 
 	<a ng-href="{{amendment.src}}" target="_blank"><p class="md-body-1">{{amendment.reference}} {{amendment.seq}}</p></a>
-	<div ng-repeat="mep in amendment.meps" class="avatar icon-{{::mep}}" title="{{::mep}}"></div>
+	<div ng-repeat="mep in amendment.meps" class="avatar icon-{{::mep}}" title="{{::mep}}"  ui-sref="mepsget.category({userid:mep,category:'Amendments'})"  ></div>
 	<div class="textdiff" semantic-diff right-obj="amendment.newtext" left-obj="amendment.oldtext"></div>
 
   </md-content>

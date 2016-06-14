@@ -12,16 +12,30 @@
     <div ng-repeat="type in ['For','Against','Abstain']">
         <h1 ng-click="open=!open">{{type}} {{voteresult[type].total}}</h1>
 <md-tabs md-dynamic-height md-border-bottom >
-      <md-tab label="{{party.group}}" ng-repeat="party in voteresult[type].groups" md-on-select="selectParty(party)">
+      <md-tab label="{{party.group}} ({{party.votes.length}})" ng-repeat="party in voteresult[type].groups" md-on-select="selectParty(party)">
+
+
+                    <md-list class="fixedRows">
+                        <md-list-item class="md-2-line contact-item" ng-repeat="vote in party.votes" style="display:inline-block;in-width:160px" ui-sref="mepsget({'userid':vote.ep_id})">
+                    <div class="icon-{{::vote.ep_id}}" title="{{::mep.Name.full}}"></div>
+
+                            <div class="md-list-item-text compact">
+                                <h3>{{vote.name}}</h3>
+
+                            </div>
+                        </md-list-item>
+                    </md-list>
+ 
 
       </md-tab>
 </md-tabs>
-        <md-card g-repeat="group in voteresult[type].groups">
+<!--
+        <md-card>
 	  <md-content class="md-padding autocomplete" layout="column" ng-class="type">
 
                 <md-card-title>
                     <md-card-title-text >
-                        <span class="md-headline">{{group.group}} {{group.votes.length}}</span>
+                        <span class="md-headline">{{type}} {{group.group}} {{group.votes.length}}</span>
                     </md-card-title-text>
                 </md-card-title>
 
@@ -39,13 +53,11 @@
     </md-contact-chips>
                     <md-list class="fixedRows">
                         <md-list-item class="md-2-line contact-item" ng-repeat="vote in group.votes" style="display:inline-block;in-width:160px" ui-sref="mepsget({'userid':vote.ep_id})">
-<!--
-                            <img ng-src="http://www.europarl.europa.eu/mepphoto/{{vote.ep_id}}.jpg" class="md-avatar" alt="{{vote.userid}}"  />
--->
                     <div class="icon-{{::vote.ep_id}}" title="{{::mep.Name.full}}"></div>
 
                             <div class="md-list-item-text compact">
                                 <h3>{{vote.name}}</h3>
+
                             </div>
                         </md-list-item>
                     </md-list>
@@ -53,6 +65,7 @@
             </div>
 	</md-content>
     </md-card>
+-->
 </div>
 <!--
 	<div>

@@ -32,6 +32,7 @@ angular.module("cal",["angularMoment"])
 
 </div>
 </div>
+<h3>{{selectedday.activities[0].date}}</h3>
 <md-list>
 <md-list-item  ng-if="selectedday.activities" ng-repeat="theactivity in selectedday.activities"><p><span class="{{::theactivity.group}} md-clickable">{{::theactivity.group}}</span> <a ng-href="{{::theactivity.titleUrl}}" target="_blank"> {{::theactivity.title}}</a></p>
 
@@ -41,6 +42,7 @@ angular.module("cal",["angularMoment"])
 </md-list-item>
 
 </md-list>
+<div id="endofpage"> </div>
 `,
     scope:{
 	mep:"=",
@@ -92,6 +94,9 @@ angular.module("cal",["angularMoment"])
                 console.log(day.activities);
                 $scope.selectedday.activities=day.activities;
 	        $scope.onselect	({day:day});
+		window.setTimeout(function(){
+			document.getElementById("endofpage").scrollIntoView();
+		},1);
         };
         function isWeekend(date) {
                 if(date.day()<1 || date.day()>5){
