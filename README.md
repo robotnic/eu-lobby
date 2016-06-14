@@ -11,6 +11,7 @@ Copy data
 ---------
 This script copies data from parltrack and unpacks it to the "data" folder. After db import you can delete the files in "data" folder.
 ```
+cd eu-lobby
 node install.sh
 ```
 
