@@ -13,6 +13,7 @@ var imageResize = require('gulp-image-resize');
 
 gulp.task('copy',function(){
 	gulp.src(['public/icons/*']).pipe(gulp.dest('build/icons'));
+	gulp.src(['public/manifest.json']).pipe(gulp.dest('build/manifest.json'));
 });
 
 

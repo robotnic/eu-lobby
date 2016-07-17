@@ -10,7 +10,7 @@ let amendmentSchema = new Schema({
   createdAt: {type: Date, 'default': Date.now},
   updatedAt: {type: Date, 'default': Date.now}
 },{
-  collection : 'ep_amendments'
+  collection : 'amendments'
 });
 
 let amendmentModel = mongoose.model('amendment', amendmentSchema);
