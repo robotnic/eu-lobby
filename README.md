@@ -22,6 +22,7 @@ mongoimport --upsert --db eulobby --collection dossiers --file data/dossiers.jso
 mongoimport --upsert --db eulobby --collection meps_current --file data/meps_current.json 
 mongoimport --upsert --db eulobby --collection votes --file data/votes.json 
 mongoimport --upsert --db eulobby --collection amendments --file data/amendments.json 
+mongoimport --upsert --db eulobby --collection comagendas --file data/comagendas.json 
 ```
 (there may be lots of exeptions, but it should still import data)
 
