@@ -12,12 +12,36 @@ import socketio from 'feathers-socketio';
 import authentication from 'feathers-authentication';
 import middleware from './middleware';
 import services from './services';
+var feathersSwagger = require('feathers-swagger');
+
 //const hook = require('feathers-hooks');
 
 
 let app = feathers();
 
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
 
+
+// Use Feathers Swagger Plugin
+app.configure(feathersSwagger({ 
+/* example configuration */ 
+    docsPath:'/docs',
+    schemes:['http'],
+    version: '0.0.0',
+    basePath: '',
+    info: {
+        'title': 'EU API',
+        'description': 'API for EU Parlament',
+        'termsOfServiceUrl': 'https://github.com/feathersjs/feathers-swagger/blob/master/LICENSE',
+        'contact': 'example@example.com',
+        'license': 'MIT',
+        'licenseUrl': 'https://github.com/feathersjs/feathers-swagger/blob/master/LICENSE'
+    },
+}));
 
 
 /*
@@ -44,7 +68,10 @@ app.configure(configuration(join(__dirname, '..')))
   .configure(socketio())
   .configure(authentication( app.get('auth') ))
   .configure(services)
-  .configure(middleware);
-
+  .configure(middleware)
+  // Turn on JSON parser for REST services
+  .use(bodyParser.json())
+  // Turn on URL-encoded parser for REST services
+  .use(bodyParser.urlencoded({extended: true}));
 
 export default app;

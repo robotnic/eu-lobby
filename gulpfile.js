@@ -14,6 +14,7 @@ var imageResize = require('gulp-image-resize');
 gulp.task('copy',function(){
 	gulp.src(['public/icons/*']).pipe(gulp.dest('build/icons'));
 	gulp.src(['public/manifest.json']).pipe(gulp.dest('build/manifest.json'));
+	gulp.src(['public/swagger/**/*']).pipe(gulp.dest('build/swagger/'));
 });
 
 
@@ -72,6 +73,7 @@ var sources=[
 "public/bower_components/lodash/dist/lodash.js",
 "public/bower_components/google-diff-match-patch/diff_match_patch.js",
 "public/bower_components/angular-diff-match-patch/angular-diff-match-patch.js",
+"public/bower_components/swagger-angular-client/dist/swagger-angular-client.js",
 "build/angular-templates.js",
 "public/script.js"
 ]
@@ -80,6 +82,7 @@ var sources=[
 gulp.task('templateswatch', function() {
     gulp.watch('public/modules/**/*.html', ['templates','js-fef']);
     gulp.watch('public/index.html', ['html']);
+    gulp.watch('public/swagger/example.html', ['copy']);
     gulp.watch('public/**/*.css',['css']);
     gulp.watch('public/script.js',['js-fef']);
     gulp.watch('public/modules/**/*.js',['js-fef']);

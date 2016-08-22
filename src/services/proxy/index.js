@@ -9,11 +9,9 @@ var path = require('path');
 	  var request = require('request');
   var fs = require('fs');
 
-	console.log("proxy is working",req.params);
 //	var writer = fs.createWriteStream('/tmp/xx.jpeg'); // meow meow etc.
 	var url=baseurl+req.params.id+".jpg";
 	var dest="images/"+req.params.id+".jpg";
-	console.log(url,dest);
 	var image=req.pipe(request(url))
 	image.pipe(fs.createWriteStream(dest)); //.pipe(res);
 	//req.pipe(request(url)).pipe(res);

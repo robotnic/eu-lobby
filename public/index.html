@@ -33,6 +33,29 @@
             <md-button ui-sref="votes" class="md-button">Votings </md-button>
             <md-button ui-sref="meps" class="md-button">Meps </md-button>
             <md-button ui-sref="dossiers" class="md-button"> Dossiers </md-button>
+	    <span flex></span>
+
+
+        <md-menu-bar>
+
+<md-menu>
+            <md-button ng-click="$mdOpenMenu()">
+              Info
+            </md-button>
+            <md-menu-content>
+              <md-menu-item> <md-button ng-click="go('https://github.com/robotnic/eu-lobby')"> Github </md-button> </md-menu-item>
+              <md-menu-item> <md-button ng-click="go('/swagger')">API (Swagger) </md-button> </md-menu-item>
+              <md-menu-divider></md-menu-divider>
+              <md-menu-item><md-button ui-sref="about">About</md-button></md-menu-item>
+            </md-menu-content>
+          </md-menu>
+
+        </md-menu-bar>
+
+
+
+
+
         </md-toolbar>
     </div>
     <md-content layout-padding>

@@ -6,7 +6,7 @@ var decompressor = lzma.createDecompressor();
 /*
 * Download files from parltrack
 */
-var files=["dossiers","meps_current","votes","amendments","comagendas"]
+var files=["dossiers","meps_current","votes","amendments","comagendas","com_votes"]
 
 
 //loading files in parallel didn't work for me if you wounder why it isn't just a loop. It's a workaround

@@ -40,6 +40,7 @@ create index to speed up queries
 db.votes.createIndex({"ts":1})
 db.dossiers.createIndex({"createdAt":1})
 db.dossiers.createIndex({"id":1})
+db.dossiers.createIndex({"committees.committee":1})
 db.meps_current.createIndex({"Groups.country":1})
 db.meps_current.createIndex({"Birth.date":1})
 db.votes.createIndex({"For.groups.votes.ep_id":1})
@@ -47,6 +48,8 @@ db.votes.createIndex({"Against.groups.votes.ep_id":1})
 db.votes.createIndex({"Abstain.groups.votes.ep_id":1})
 db.amendments.createIndex({"meps":1})
 db.amendments.createIndex({"date":1})
+db.amendments.createIndex({"committee":1})
+db.amendments.createIndex({"reference":1})
 ```
 Start
 --------

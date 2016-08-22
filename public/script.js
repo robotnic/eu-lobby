@@ -105,7 +105,7 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
             },
 
 	    controller: function($scope,$rootScope,$http,$stateParams,countries,parties){
-		console.log("--------------------meps list---------------");
+		console.log("--------------------meps list--------spagetticode-------");
 		var view={
 			skip:0,
 			limit:15
@@ -120,6 +120,8 @@ angular.module("eu",['ui.router','ngMaterial','countrySelect',"ngSanitize","doss
 			countrySelector="&Groups.0.country="+$scope.selectedCountry
 		}
 console.log("goliat",$scope.selectedCountry,countrySelector);
+
+
 		$scope.selectedParty=localStorage.getItem("party") ;
 		var partySelector="";
 		if($scope.selectedParty=="undefined"){
@@ -127,6 +129,17 @@ console.log("goliat",$scope.selectedCountry,countrySelector);
 		}else{
 			countrySelector="&Groups.0.country="+$scope.selectedCountry
 		}
+
+
+		$scope.active=localStorage.getItem("active") ;
+		var activeSelector="";
+		if($scope.active=="undefined"){
+			$scope.selectedParty=undefined;
+		}else{
+			activeSelector="&active="+$scope.active
+		}
+
+
 		$scope.$watch("selectedCountry",function(newValue, oldValue){
 			if (newValue !== oldValue) {
 				localStorage.setItem("country",$scope.selectedCountry)
@@ -153,6 +166,19 @@ console.log("goliat",$scope.selectedCountry,countrySelector);
 			}
 		});
 
+		$scope.$watch("active",function(newValue, oldValue){
+			if (newValue !== oldValue) {
+				localStorage.setItem("active",$scope.active)
+				if($scope.active){
+					activeSelector="&active="+$scope.active
+				}
+				view.skip=0;
+				load();
+			}
+		});
+
+		
+
 		
 
 		$scope.loadMore=function(){
@@ -173,7 +199,7 @@ console.log("goliat",$scope.selectedCountry,countrySelector);
 		function load(keep){
 			console.log("now real loading",keep,view);
 			$scope.loading=true;
-			var url="/api/meps?$skip="+view.skip+"&$limit="+view.limit+"&$sort[Birth.date]=-1&$select[]=Birth&$select[]=Photo&$select[]=Name&$select[]=Groups&$select[]=UserID&$select[]=active"+countrySelector+partySelector;
+			var url="/api/meps?$skip="+view.skip+"&$limit="+view.limit+"&$sort[Birth.date]=-1&$select[]=Birth&$select[]=Photo&$select[]=Name&$select[]=Groups&$select[]=UserID&$select[]=active"+countrySelector+partySelector+activeSelector;
 			console.log(url,countrySelector);
 			$http.get(url).then(function(response){
 				if(keep){
@@ -213,12 +239,20 @@ console.log("goliat",$scope.selectedCountry,countrySelector);
 	    url:'/dossier/:dossierid',
 	    templateUrl: 'modules/dossier/index.html',
             controller: 'dossiercontroller',
-        });
+        })
+        .state('about', {
+	    url:'/about',
+	    templateUrl: 'modules/about/index.html',
+            controller: function(){}
+        })
         
 })
 .controller("api",function($scope,$http){
 	$scope.test="funkt";
 	$scope.splash=false;
+	$scope.go=function(url){
+		location.href=url;
+	}
 })
 
 

@@ -19,6 +19,14 @@
 		</md-select>
     </md-input-container>
     <md-input-container style="margin-right: 10px;">
+		<md-select ng-model="active" placeholder="active + inactive">
+		    <md-option ng-repeat="key in ['active','inactive','all'] " value="{{key}}">
+			{{key}}
+		    </md-option>
+		</md-select>
+    </md-input-container>
+ 
+    <md-input-container style="margin-right: 10px;">
 		<label>Search by name</label>
 		<input>
     </md-input-container>

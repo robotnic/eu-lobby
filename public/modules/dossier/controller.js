@@ -4,10 +4,18 @@ angular.module('dossier', [])
 .controller("dossierlistcontroller", function($scope,$http,$stateParams){
         var skip=0;
         var limit=5;
+	$scope.selected={committee:"INST"};
+	$scope.committees=[ "EMPL", "CONT", "AFET", "IMCO", "JURI", "TRAN", "DEVE", "ENVI", "INTA", "BUDG", "CULT", "ECON", "FEMM", "ITRE", "PECH", "AFCO", "AGRI", "REGI", "LIBE", "PETI", "RETT", "RELA", "ENER", "INST", "CODE", "CRIS", "SURE", "CLIM", "TDIP", "EQUI", "FINP", "DELE", "REGL", "CRIM", "EMIS", "TAXE" ]
 	$scope.loading=false;
 	
 	function load(keepdata){
+		if(!keepdata){
+			skip=0;
+		}
 		var url="/api/dossiers?$skip="+skip+"&$limit="+limit+"&$sort[meta.updated]=-1";
+		if($scope.selected.committee){
+			url+="&committees.committee="+$scope.selected.committee;
+		}
 		$scope.loading=true;
 		$http.get(url).then(function(response){
 			$scope.loading=false;
@@ -19,6 +27,11 @@ angular.module('dossier', [])
 		});
 	}
 
+        $scope.committee=function(key){
+		console.log(key);
+		$scope.selected.committee=key;
+		load();
+	}
         $scope.loadMore=function(){
 		if(!$scope.loading){
 			skip=skip+limit;

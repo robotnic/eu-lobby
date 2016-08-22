@@ -1,6 +1,10 @@
 <md-content>
 <md-list  ng-cloak>
   <md-subheader class="md-no-sticky">Dossiers</md-subheader>
+            <md-button class="md-raised md-primary" ng-repeat="key in committees" value="{{key}}" ng-click="committee(key)">
+                {{key}}
+            </md-button>
+
   <div infinite-scroll='loadMore()' infinite-scroll-distance='2'>
 
   <md-list-item ng-repeat="item in dossiers.data track by $index" ui-sref="dossierget({dossierid:item._id})">

@@ -5,20 +5,12 @@ let before = {
   all: [],
   find: [],
   get: [],
-  create: [],
-  update: [],
-  patch: [],
-  remove: []
 };
 
 let after = {
   all: [],
   find: [],
   get: [],
-  create: [],
-  update: [],
-  patch: [],
-  remove: []
 };
 
 export default { before, after };

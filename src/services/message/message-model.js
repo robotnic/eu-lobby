@@ -8,7 +8,9 @@ const Schema = mongoose.Schema;
 
 let messageSchema = new Schema({
   createdAt: {type: Date, 'default': Date.now},
-  updatedAt: {type: Date, 'default': Date.now}
+  updatedAt: {type: Date, 'default': Date.now},
+  message: {type: Schema.Types.Mixed, required: true},
+  id: {type: String, required: true},
 });
 
 let messageModel = mongoose.model('message', messageSchema);
