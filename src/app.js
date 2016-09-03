@@ -12,6 +12,9 @@ import socketio from 'feathers-socketio';
 import authentication from 'feathers-authentication';
 import middleware from './middleware';
 import services from './services';
+var FacebookStrategy = require('passport-facebook').Strategy;
+
+
 var feathersSwagger = require('feathers-swagger');
 
 //const hook = require('feathers-hooks');
@@ -26,13 +29,14 @@ app.use(function(req, res, next) {
 });
 
 
+
 // Use Feathers Swagger Plugin
 app.configure(feathersSwagger({ 
 /* example configuration */ 
     docsPath:'/docs',
+    basePath:'',
     schemes:['http'],
     version: '0.0.0',
-    basePath: '',
     info: {
         'title': 'EU API',
         'description': 'API for EU Parlament',
@@ -66,12 +70,26 @@ app.configure(configuration(join(__dirname, '..')))
   .configure(hooks())
   .configure(rest())
   .configure(socketio())
-  .configure(authentication( app.get('auth') ))
+  .configure(authentication( {
+	  facebook: {
+	    strategy: FacebookStrategy,
+	    'clientID': '1401876969840037',
+	    'clientSecret': '0a5ee81fc1ba4aaaae13ae984ef68e17',
+	    'permissions': {
+	      authType: 'rerequest',
+	      'scope': ['public_profile', 'email']
+	    },
+		callbackURL: 'http://www.localhost:3030/auth/facebook/callback'
+	  }
+	}
+
+  ))
   .configure(services)
   .configure(middleware)
   // Turn on JSON parser for REST services
   .use(bodyParser.json())
   // Turn on URL-encoded parser for REST services
-  .use(bodyParser.urlencoded({extended: true}));
+  .use(bodyParser.urlencoded({extended: true}))
+
 
 export default app;

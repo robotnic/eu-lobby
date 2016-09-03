@@ -20,6 +20,19 @@
 </head>
 
 <body ng-controller="api" ng-init="splash=false">
+          <form class="form" method="post" action="/auth/local">
+            <fieldset>
+              <input class="block" type="email" name="email" placeholder="email">
+            </fieldset>
+
+            <fieldset>
+              <input class="block" type="password" name="password" placeholder="password">
+            </fieldset>
+
+            <button type="submit" class="button button-primary block login">
+              Login
+            </button>
+          </form>
     <div ng-if="splash" class="splash">
 	<p>
 	<im src="icons/Flag_of_Europe.svg"/>

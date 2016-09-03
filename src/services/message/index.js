@@ -2,6 +2,10 @@ import service from 'feathers-mongoose';
 import message from './message-model';
 const rest = require('feathers-rest');
 import hooks from './hooks';
+import { hooks as auth } from 'feathers-authentication';
+const errors = require('feathers-errors');
+
+
 
 export default function() {
     const app = this;
@@ -109,8 +113,9 @@ export default function() {
 
     let login = function(options) {
         return function(hook) {
+	console.log(hook.params);
             if (!hook.params.user) {
-                throw new Error('You are not authorized. Set the ?user=username parameter.');
+                throw new errors.NotAuthenticated('You are not authorized. Set the ?user=username parameter.');
             }
 
         }
@@ -121,11 +126,18 @@ export default function() {
     // Get our initialize service to that we can bind hooks
     const messageService = app.service('/messages');
     messageService.before({
-        find: [],
+	all: [
+	    auth.verifyToken(),
+	    auth.populateUser(),
+	],
+        find: [
+		login()
+		
+	],
         update: [updateHook()],
-        get: [],
+        get: [auth.hashPassword()],
         create: [myHook()],
-        remove: [],
+        remove: [auth.hashPassword()],
 
 
 
