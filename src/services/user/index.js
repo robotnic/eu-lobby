@@ -1,6 +1,7 @@
 import service from 'feathers-mongoose';
 import user from './user-model';
 import hooks from './hooks';
+import { hooks as authHooks } from 'feathers-authentication';
 
 export default function(){
   const app = this;
@@ -18,6 +19,10 @@ export default function(){
 
   // Get our initialize service to that we can bind hooks
   const userService = app.service('/users');
+
+  userService.before({
+    create: [authHooks.hashPassword('password')]
+  });
 
   // Set up our before hooks
   userService.before(hooks.before);
